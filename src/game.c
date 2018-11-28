@@ -964,12 +964,21 @@ void playgame (void) {
   printf(": ");
   scanf("%d", &p2);
 
+  // Config for only human to human
+  if (p1 != 0 || p2 != 0) {
+    printf("       \n");
+    printf("You cant select neither player is human\n");
+    // scanf("%d", &printflag);
+    exit(1);
+  }
+
   strfn1 = STRATEGIES[p1][2]; strfn2 = STRATEGIES[p2][2];
   if (strfn1 == human || strfn2 == human) printflag = 1;
   else {
     printf("       \n");
     printf("Neither player is human. Do you want to print each board (1) or not (0): ");
-    scanf("%d", &printflag);
+    // scanf("%d", &printflag);
+    exit(1);
   }
 
   othello(strfn1, strfn2, printflag);
