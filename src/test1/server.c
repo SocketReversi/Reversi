@@ -13,6 +13,59 @@
 #define BACKLOG 20   /* Number of allowed connections */
 #define BUFF_SIZE 1024
 
+//state for game
+#define MAX_TABLE 10
+#define TRONG -1
+#define CO1NGUOI 1
+#define CO2NGUOI 2
+
+typedef struct tableGame{
+	int master;
+	int guest;
+	int state;
+	int IDtable;
+}tableGame;
+
+void createTableList(tableGame table[MAX_TABLE]){
+	for(int i=0;i<MAX_TABLE;i++){
+		table[i].state = TRONG;
+		table[i].master = TRONG;
+		table[i].guest = TRONG;
+		table[i].IDtable = i;		
+	}
+}
+int createTable(int IDmaster,tableGame table[MAX_TABLE]){
+	for(int i=0;i<MAX_TABLE;i++){
+		if(table[i].state == TRONG){
+			table[i].master = IDmaster;
+			table[i].state  = CO1NGUOI;
+			return 1; //tao thanh cong 1 ban choi moi
+		}
+	}
+	return 0; //khong tao duoc ban choi
+}
+
+int joinTable(int IDguest, tableGame table[MAX_TABLE]){
+	for(int i=0;i<MAX_TABLE;i++){
+		if(table[i].state == CO1NGUOI){
+			table[i].guest = IDguest;
+			table[i].state = CO2NGUOI;
+			return 1; //tham gia ban choi thanh cong
+		}
+	}
+	return 0; //khong tham gia duoc ban choi nao
+}
+
+int findIDgamer(int IDgamer,tableGame table[MAX_TABLE]){
+	for(int i=0; i<MAX_TABLE ; i++){
+		if(IDgamer == table[i].master)
+			return table[i].IDtable;
+		else if(IDgamer == table[i].guest){
+			return (MAX_TABLE + table[i].IDtable);
+		}
+	}
+	return TRONG;
+}
 /* The processData function copies the input string to output */
 void processData(char *in, char *out);
 
@@ -34,6 +87,9 @@ int main(int argc , char *argv[])
 	char sendBuff[BUFF_SIZE], rcvBuff[BUFF_SIZE];
 	socklen_t clilen;
 	struct sockaddr_in cliaddr, servaddr;
+
+	tableGame table[MAX_TABLE];
+	createTableList(table);
 
 	if(argc !=2){
 		printf("PARAMETER INVALID!\n");
@@ -121,12 +177,22 @@ int main(int argc , char *argv[])
 				}
 				
 				else {
+					if(strcmp(rcvBuff,"tao") == 0){
+						createTable(client[i],table);
+					}else if(strcmp(rcvBuff,"thamgia") == 0){
+						joinTable(client[i],table);
+					}
+
 					processData(rcvBuff, sendBuff);
-					printf("[i:%d]\n",i);
-					if(i == 0)
-						sendData(client[i+1], sendBuff, strlen(sendBuff), 0);
-					else if(i == 1)
-						sendData(client[i-1], sendBuff, strlen(sendBuff), 0);
+					//printf("[i:%d]\n",i);
+					int id = findIDgamer(client[i],table);
+					if(id > -1 && id < MAX_TABLE){
+						if(table[0].guest != TRONG)
+							sendData(table[id].guest, sendBuff, strlen(sendBuff), 0);
+					}
+					else if(id >= MAX_TABLE){
+						sendData(table[id-MAX_TABLE].master, sendBuff, strlen(sendBuff), 0);
+					}
 					resetBuff(sendBuff,rcvBuff);
 					if (ret <= 0){
 						FD_CLR(client[i], &allset);
@@ -159,7 +225,7 @@ int receiveData(int s, char *buff, int size, int flags){
 int sendData(int s, char *buff, int size, int flags){
 	int n;
 	n = send(s, buff, size, flags);
-	printf("[%d]\n",s);
+	//printf("[%d]\n",s);
 	if(n < 0)
 		perror("Error: ");
 	return n;

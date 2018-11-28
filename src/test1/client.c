@@ -22,9 +22,6 @@ int main(int argc, char *argv[]){
 		printf("PARAMETER INVALID!\n");
 		return 0;
 	}
-	printf("Chon quyen:\n1.Guitruoc-Nhansau\n2.Guisau-Nhantruoc\n");
-	printf("Nhap:");scanf("%d",&c);
-	printf("[%d]\n",c);
 
 	//Step 1: Construct socket
 	client_sock = socket(AF_INET,SOCK_STREAM,0);
@@ -40,18 +37,16 @@ int main(int argc, char *argv[]){
 		return 0;
 	}
 	//Step 4: Communicate with server	
-	if(c == 1){
-		while(getchar()!='\n');
 		while(1){
 			//send message
 			printf("\nSEND	:");
 			memset(buff,'\0',(strlen(buff)+1));
 			fgets(buff, BUFF_SIZE, stdin);
 			msg_len = strlen(buff);
-			// if (msg_len == ){
-			// 	printf("EXIT!\n");
-			// 	break;
-			// }
+			if (msg_len == 1){
+				printf("EXIT!\n");
+				break;
+			}
 			
 			bytes_sent = send(client_sock, buff, msg_len, 0);
 			if(bytes_sent <= 0){
@@ -70,37 +65,6 @@ int main(int argc, char *argv[]){
 			printf("----------------\n");
 			printf("MESSAGE	: [%s]\n", buff);
 		}
-	}else{
-		while(getchar()!='\n');
-		while(1){
-			//receive echo reply
-			bytes_received = recv(client_sock, buff, BUFF_SIZE-1, 0);
-			if(bytes_received <= 0){
-				printf("\nCANNOT RECEIVE DATA FROM SERVER!\n");
-				break;
-			}
-			
-			buff[bytes_received] = '\0';
-			printf("----------------\n");
-			printf("MESSAGE	: [%s]\n", buff);
-			
-			//send message
-			printf("\nSEND	:");
-			memset(buff,'\0',(strlen(buff)+1));
-			fgets(buff, BUFF_SIZE, stdin);
-			msg_len = strlen(buff);
-			// if (msg_len == 1){
-			// 	printf("EXIT!\n");
-			// 	break;
-			// }
-			
-			bytes_sent = send(client_sock, buff, msg_len, 0);
-			if(bytes_sent <= 0){
-				printf("\nCONNECTION CLOSED!\n");
-				break;
-			}
-		}
-	}
 	//Step 4: Close socket
 	close(client_sock);
 	return 0;
