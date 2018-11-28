@@ -3,7 +3,7 @@
 
 ### I. Sinh vien tham gia
 - Hoang Trung Kien - 20152050
-- Nguyen Viet Thai -
+- Nguyen Viet Thai - 20153356
 ### II. De tai
 - Mo phong tro choi co Reversi dua vao tcp socket
 ### III. Mo ta tro choi
