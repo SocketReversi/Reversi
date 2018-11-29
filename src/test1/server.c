@@ -9,7 +9,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "lib.h"
-
+#include "acc_libs.h"
+#include "game_libs.h"
 
 #define PORT 5500   /* Port that will be opened */ 
 #define BACKLOG 20   /* Number of allowed connections */
@@ -127,10 +128,6 @@ int main(int argc , char *argv[])
 				}
 				
 				else {
-
-					//xem thong tin hien tai cac phong choi------------------------
-					printTable(table);
-
 					if(strcmp(rcvBuff,"create") == 0){
 						int create = createTable(client[i],table);
 						if(create == 0){
@@ -140,7 +137,6 @@ int main(int argc , char *argv[])
 							printTable(table);
 							continue;
 						}
-						printTable(table);
 						printf("Da tao 1 ban choi\n");
 								
 					}else if(strcmp(rcvBuff,"join") == 0){
@@ -154,7 +150,7 @@ int main(int argc , char *argv[])
 					}else if(strcmp(rcvBuff,"leave") == 0){
 						int find = findID(client[i] , table);
 						//printf("client : %d\n",client[i]);
-						if(find != TRONG){
+						if(find != EMPTY){
 							processData("Ban choi da duoc huy!",sendBuff);
 						}else{
 							processData("Roi phong that bai!",sendBuff);
@@ -170,7 +166,7 @@ int main(int argc , char *argv[])
 
 					int id = findIDgamer(client[i],table);
 					if(id > -1 && id < MAX_TABLE){
-						if(table[0].guest != TRONG)
+						if(table[id].guest != EMPTY)
 							sendData(table[id].guest, sendBuff, strlen(sendBuff), 0);
 						printTable(table);
 					}
@@ -212,9 +208,10 @@ int sendData(int s, char *buff, int size, int flags){
 	n = send(s, buff, size, flags);
 	//printf("[%d]\n",s);
 	if(n < 0)
-		perror("Error: ");
+		perror("Send Error: ");
 	return n;
 }
+
 int resetBuff(char *sendBuf,char *rcvBuf){
 	memset(sendBuf,'\0',(strlen(sendBuf)+1));
 	memset(rcvBuf,'\0',(strlen(rcvBuf)+1));
