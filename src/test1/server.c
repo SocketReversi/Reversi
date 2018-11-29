@@ -39,6 +39,7 @@ int main(int argc , char *argv[])
 
 	tableGame table[MAX_TABLE];
 	createTableList(table);
+	printf("Khoi tao khong gian cac ban choi\n");
 
 	if(argc !=2){
 		printf("PARAMETER INVALID!\n");
@@ -126,21 +127,56 @@ int main(int argc , char *argv[])
 				}
 				
 				else {
-					if(strcmp(rcvBuff,"tao") == 0){
-						createTable(client[i],table);
-					}else if(strcmp(rcvBuff,"thamgia") == 0){
-						joinTable(client[i],table);
-					}
 
+					//xem thong tin hien tai cac phong choi------------------------
+					printTable(table);
+
+					if(strcmp(rcvBuff,"create") == 0){
+						int create = createTable(client[i],table);
+						if(create == 0){
+							printf("Tao phong choi that bai\n");
+							processData("Tao phong that bai!",sendBuff);
+							sendData(client[i], sendBuff, strlen(sendBuff), 0);
+							printTable(table);
+							continue;
+						}
+						printTable(table);
+						printf("Da tao 1 ban choi\n");
+								
+					}else if(strcmp(rcvBuff,"join") == 0){
+						int join = joinTable(client[i],table);
+						if(join == 0){
+							processData("Khong tham gia duoc!",sendBuff);
+							sendData(client[i], sendBuff, strlen(sendBuff), 0);
+							printTable(table);
+							continue;
+						}
+					}else if(strcmp(rcvBuff,"leave") == 0){
+						int find = findID(client[i] , table);
+						//printf("client : %d\n",client[i]);
+						if(find != TRONG){
+							processData("Ban choi da duoc huy!",sendBuff);
+						}else{
+							processData("Roi phong that bai!",sendBuff);
+						}
+							//printf("master:[%d]-client:[%d]\n",table[find].master,table[find].guest);
+							sendData(table[find].master, sendBuff, strlen(sendBuff), 0);
+							sendData(table[find].guest, sendBuff, strlen(sendBuff), 0);
+							printTable(table);
+							leaveTable(client[i],table);
+						continue;
+					}
 					processData(rcvBuff, sendBuff);
-					//printf("[i:%d]\n",i);
+
 					int id = findIDgamer(client[i],table);
 					if(id > -1 && id < MAX_TABLE){
 						if(table[0].guest != TRONG)
 							sendData(table[id].guest, sendBuff, strlen(sendBuff), 0);
+						printTable(table);
 					}
 					else if(id >= MAX_TABLE){
 						sendData(table[id-MAX_TABLE].master, sendBuff, strlen(sendBuff), 0);
+						printTable(table);
 					}
 					resetBuff(sendBuff,rcvBuff);
 					if (ret <= 0){

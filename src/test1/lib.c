@@ -20,7 +20,7 @@ int createTable(int IDmaster,tableGame table[MAX_TABLE]){
 }
 
 int joinTable(int IDguest, tableGame table[MAX_TABLE]){
-	for(int i=0;i<MAX_TABLE;i++){
+	for(int i=0 ; i<MAX_TABLE ; i++){
 		if(table[i].state == CO1NGUOI){
 			table[i].guest = IDguest;
 			table[i].state = CO2NGUOI;
@@ -40,3 +40,37 @@ int findIDgamer(int IDgamer,tableGame table[MAX_TABLE]){
 	}
 	return TRONG;
 }
+
+int findID(int id, tableGame table[MAX_TABLE]){
+	for(int i=0; i<MAX_TABLE ; i++){
+		if(id == table[i].master || id == table[i].guest)
+			return table[i].IDtable;
+	}
+	return TRONG;
+}
+
+void printInfoAccount(acc account){
+	printf("---Info Account---\n");
+	printf("Account : %s\n",account.username);
+	printf("ID 		: %d\n",account.IDacc);
+	printf("Rank 	: %d\n",account.rank);
+	printf("Point 	: %d\n",account.point);
+}
+
+int leaveTable(int IDgamer, tableGame table[MAX_TABLE]){
+	int find = findID(IDgamer,table);
+	if(find != TRONG ){
+		table[find].master = TRONG;
+		table[find].guest  = TRONG;
+		table[find].state  = TRONG;
+		return find;
+	}
+	return TRONG;
+}
+
+void printTable(tableGame table[MAX_TABLE]){
+	for(int i=0 ; i<MAX_TABLE ; i++){
+		printf("IDTable:%d\nState:%d\nMaster:%d\nGuest:%d\n\n",table[i].IDtable,table[i].state,table[i].master,table[i].guest);
+	}
+}
+

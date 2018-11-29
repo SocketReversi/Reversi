@@ -9,7 +9,7 @@
 ### III. Mo ta tro choi
 - Nguoi choi dang ky tai khoan
 - Nguoi choi dang nhap vao tai khoan da dang ki
-- Nguoi choi tao phong, tro nguoi choi khac vao choi cung
+- Nguoi choi tao phong, choo nguoi choi khac vao choi cung
 - Nguoi choi chien thang va duoc nhan 1 so diem, thua se bi tru diem
 - Nguoi choi duoc xep hang dua tren diem dat duoc
 ### IV. Qua trinh hoan thanh du an
