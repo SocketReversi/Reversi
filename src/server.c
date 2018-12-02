@@ -15,28 +15,23 @@
 #include <sys/time.h>
 #include <string.h>
 #include <arpa/inet.h>
-
-#define BACKLOG 20 /* Number of allowed connections */
-#define BUFF_SIZE 1024
-
-/* The processData function copies the input string to output */
-void processData(char *in, char *out);
-
-/* The recv() wrapper function*/
-int receiveData(int s, char *buff, int size, int flags);
-
-/* The send() wrapper function*/
-int sendData(int s, char *buff, int size, int flags);
+#include <gtk/gtk.h>
+#include "../libs/server.h"
+#include "../libs/account.h"
+#include "../libs/lib.h"
 
 int main(int argc, char *argv[])
 {
-  if (argc < 2)
-  {
-    printf("Parameter invalid\n");
-    return 1;
-  }
+  paramsServerValid(argc);
   // Set open port
   int PORT = atoi(argv[1]);
+
+  //Init user data
+  GSList *listUser = importUserToList();
+  for(GSList *iterator = listUser; iterator; iterator = iterator->next) {
+    account *user = (account *)(iterator->data);
+    printf("%s %s\n", user->username, user->password);
+  }
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
@@ -156,28 +151,4 @@ int main(int argc, char *argv[])
   }
 
   return 0;
-}
-
-void processData(char *in, char *out)
-{
-  strcpy(out, in);
-}
-
-int receiveData(int s, char *buff, int size, int flags)
-{
-  int n;
-  n = recv(s, buff, size, flags);
-  if (n < 0)
-    perror("Error: ");
-  return n;
-}
-
-int sendData(int s, char *buff, int size, int flags)
-{
-  int n;
-
-  n = send(s, buff, size, flags);
-  if (n < 0)
-    perror("Error: ");
-  return n;
 }

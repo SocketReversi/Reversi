@@ -1,0 +1,1 @@
+FILE *open(char *filename, char *action);

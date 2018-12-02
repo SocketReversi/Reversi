@@ -6,8 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-
-#define BUFF_SIZE 1024
+#include "../libs/client.h"
 
 //client input message
 char *clientInput()
@@ -22,11 +21,7 @@ char *clientInput()
 
 int main(int argc, char *argv[])
 {
-  if (argc < 3)
-  {
-    printf("Parameter invalid\n");
-  }
-
+  paramsClientValid(argc);
   //set server address
   char SERVER_ADDR[20];
   strcpy(SERVER_ADDR, argv[1]);
