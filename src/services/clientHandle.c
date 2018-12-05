@@ -14,8 +14,9 @@ Request *clientHandle()
   } while(select < LOGIN && select > MOVE);
 
   // Client input message send to server  
+  while(getchar()!='\n');
   printf("Message: ");
-  gets(request->message);
+  fgets(request->message,1024,stdin);
 
   // Update request store send to server
   request->message[strlen(request->message) - 1] = '\0';
