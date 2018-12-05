@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include "../../libs/request.h"
@@ -29,6 +30,16 @@ int sendData(int s, Request *buff, int size, int flags)
   return n;
 }
 
-void renderMessage(Request *request) {
+void renderMessage(Request *request)
+{
   printf("Opcode: %d\nMessage: %s\n", request->opcode, request->message);
+}
+
+Request *setRequest(int opcode, char *message) {
+  Request *request = malloc(sizeof(Request));
+
+  request->opcode = opcode;
+  strcpy(request->message, message);
+
+  return request;
 }

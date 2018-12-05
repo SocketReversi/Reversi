@@ -19,3 +19,10 @@ void paramsServerValid(int argc) {
     exit(0);
   }
 }
+
+int isEmpty(char *text) {
+  if (strcmp(text, "") == 0) {
+    return 1;
+  }
+  return 0;
+}

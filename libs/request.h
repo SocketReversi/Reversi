@@ -1,3 +1,5 @@
+#define MAX_MESSAGE 1024
+
 /**
  ** Client request opcode 
  **/
@@ -43,7 +45,7 @@ typedef enum {
 // Request struct
 typedef struct Request {
   int opcode;
-  char message[50];
+  char message[MAX_MESSAGE];
 } Request;
 
 // Method
@@ -51,3 +53,4 @@ void processData(char *in, char *out);
 int receiveData(int s, Request *buff, int size, int flags);
 int sendData(int s, Request *buff, int size, int flags);
 void renderMessage(Request *request);
+Request *setRequest(int opcode, char *message);
