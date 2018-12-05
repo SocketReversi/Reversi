@@ -6,18 +6,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "../libs/account.h"
+#include "../libs/valid.h"
+#include "../libs/request.h"
 #include "../libs/client.h"
-
-//client input message
-char *clientInput()
-{
-  char *buff = (char *)malloc(sizeof(char) * BUFF_SIZE);
-  memset(buff, '\0', BUFF_SIZE);
-  printf("> Client input: ");
-  fgets(buff, BUFF_SIZE, stdin);
-  buff[strlen(buff) - 1] = '\0';
-  return buff;
-}
 
 int main(int argc, char *argv[])
 {
@@ -52,11 +44,9 @@ int main(int argc, char *argv[])
   //send message
   while (1)
   {
-    strcpy(buff, clientInput());
-    if (strlen(buff) == 0)
-      break;
+    Request *request = clientHandle();
 
-    bytes_sent = send(client_sock, buff, BUFF_SIZE, 0);
+    bytes_sent = sendData(client_sock, request, sizeof(Request), 0);
 
     if (bytes_sent <= 0)
     {
@@ -65,7 +55,8 @@ int main(int argc, char *argv[])
     }
 
     //receive echo reply
-    bytes_received = recv(client_sock, &buff, sizeof(int), 0);
+    bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
+
     if (bytes_received < 0)
     {
       perror("\nError: ");
@@ -76,6 +67,8 @@ int main(int argc, char *argv[])
       printf("Connection closed.\n");
       break;
     }
+
+    renderMessage(request);
   }
 
   //Step 4: Close socket

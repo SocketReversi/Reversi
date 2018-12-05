@@ -6,4 +6,5 @@ typedef struct account{
   int status;
 } account;
 
-account *createUser(char *username, char *password, int point, int status);
+account *createAccount(char *username, char *password, int point, int status);
+account *accountIsExistByUsername(char *username);

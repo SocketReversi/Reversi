@@ -12,7 +12,6 @@ source = $(wildcard src/*.c)
 source_services = $(wildcard src/services/*.c)
 source_ultilities = $(wildcard src/ultilities/*.c)
 source_validations = $(wildcard src/validations/*.c)
-output = $(wildcard output/*)
 
 # Object file
 main = $(patsubst %.c,%.o,$(source))
@@ -27,13 +26,13 @@ libs = $(services) $(ultilities) $(validations)
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): src/$(SERVER).o $(libs)
-	$(CC) -o output/$@ $^ $(CFLAGS) $(LIBS) $(GTK)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
 $(CLIENT): src/$(CLIENT).o $(libs) 
-	$(CC) -o output/$@ $^ $(CFLAGS) $(LIBS) $(GTK)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(GTK)
 
-clean: $(libs) $(main) $(output)
-	rm -rf $(libs) $(main) $(output)
+clean: $(libs) $(main) $(SERVER) $(CLIENT)
+	rm -rf $(libs) $(main) $(SERVER) $(CLIENT)

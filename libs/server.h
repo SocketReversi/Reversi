@@ -2,5 +2,4 @@
 #define BUFF_SIZE 1024
 #define PATH_FILE "account.txt"
 
-void paramsServerValid(int argc);
-GSList *importUserToList();
+Request *handleRequest(Request *request);

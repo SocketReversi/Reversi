@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <gtk/gtk.h>
+#include "../../libs/request.h"
+#include "../../libs/account.h"
 #include "../../libs/file.h"
+#include "../../libs/server.h"
 
 FILE *open(char *filename, char *action) {
 	FILE *file = fopen(filename, action);
@@ -13,22 +17,25 @@ FILE *open(char *filename, char *action) {
 	}
 }
 
-// void *writeFile(FILE *file, LinkList *head) {
-// 	if (file == NULL) {
-// 		printf("File can not found\n");
-// 	} else {
-// 		LinkList *current = head;
+GSList *importUserFromFileToList() {
+  GSList *list = NULL;
 
-// 		fseek(file, 0, SEEK_SET);
+  FILE *file = open(PATH_FILE, "r");
 
-// 		while (current->next != NULL) {
-// 			fprintf(file, "%s %s %d", current->username, current->password, current->status);
+  if (file == NULL) {
+    exit(0);
+  }
 
-// 			if (current->next != NULL) {
-// 				fprintf(file, "\n");
-// 			}
+  char username[30], password[30];
+  int id, point, status;
 
-// 			current = current->next;
-// 		}
-// 	}
-// }
+  while (!feof(file)) {
+    fscanf(file, "%s %s %d %d", username, password, &point, &status);
+
+    account *user = createAccount(username, password, point, status);
+
+    list = g_slist_append(list, user);
+  }
+
+  return list;
+}

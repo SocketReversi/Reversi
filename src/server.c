@@ -16,9 +16,11 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <gtk/gtk.h>
-#include "../libs/server.h"
 #include "../libs/account.h"
-#include "../libs/lib.h"
+#include "../libs/request.h"
+#include "../libs/server.h"
+#include "../libs/valid.h"
+#include "../libs/file.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,19 +29,16 @@ int main(int argc, char *argv[])
   int PORT = atoi(argv[1]);
 
   //Init user data
-  GSList *listUser = importUserToList();
-  for(GSList *iterator = listUser; iterator; iterator = iterator->next) {
-    account *user = (account *)(iterator->data);
-    printf("%s %s\n", user->username, user->password);
-  }
+  GSList *listUser = importUserFromFileToList();
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
   ssize_t ret;
   fd_set readfds, allset;
-  char sendBuff[BUFF_SIZE], rcvBuff[BUFF_SIZE];
   socklen_t clilen;
   struct sockaddr_in cliaddr, servaddr;
+  Request *sendBuff;
+  Request *rcvBuff = malloc(sizeof(Request));
 
   //Step 1: Construct a TCP socket to listen connection request
   if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -123,19 +122,18 @@ int main(int argc, char *argv[])
         continue;
       if (FD_ISSET(sockfd, &readfds))
       {
-        ret = receiveData(sockfd, rcvBuff, BUFF_SIZE, 0);
+        ret = receiveData(sockfd, rcvBuff, sizeof(Request), 0);
         if (ret <= 0)
         {
           FD_CLR(sockfd, &allset);
           close(sockfd);
           client[i] = -1;
         }
-
         else
         {
-          int responseCode;
-          
-          sendData(sockfd, sendBuff, sizeof(responseCode), 0);
+          sendBuff = handleRequest(rcvBuff);
+          ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+
           if (ret <= 0)
           {
             FD_CLR(sockfd, &allset);
