@@ -1,21 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <arpa/inet.h>
+#include <gtk/gtk.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/types.h>
 #include <sys/time.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <gtk/gtk.h>
+#include <sys/wait.h>
+
+#include <unistd.h>
+
 #include "../libs/account.h"
 #include "../libs/request.h"
 #include "../libs/server.h"
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 
   //Init user data
   GSList *listUser = importUserFromFileToList();
+
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
