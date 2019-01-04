@@ -1,50 +1,46 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <errno.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <arpa/inet.h>
+#include <gtk/gtk.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/types.h>
 #include <sys/time.h>
-#include <string.h>
-#include <arpa/inet.h>
+#include <sys/wait.h>
 
-#define BACKLOG 20 /* Number of allowed connections */
-#define BUFF_SIZE 1024
+#include <unistd.h>
 
-/* The processData function copies the input string to output */
-void processData(char *in, char *out);
-
-/* The recv() wrapper function*/
-int receiveData(int s, char *buff, int size, int flags);
-
-/* The send() wrapper function*/
-int sendData(int s, char *buff, int size, int flags);
+#include "../libs/account.h"
+#include "../libs/request.h"
+#include "../libs/server.h"
+#include "../libs/valid.h"
+#include "../libs/file.h"
 
 int main(int argc, char *argv[])
 {
-  if (argc < 2)
-  {
-    printf("Parameter invalid\n");
-    return 1;
-  }
+  paramsServerValid(argc);
   // Set open port
   int PORT = atoi(argv[1]);
+
+  //Init user data
+  GSList *listUser = importUserFromFileToList();
+
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
   ssize_t ret;
   fd_set readfds, allset;
-  char sendBuff[BUFF_SIZE], rcvBuff[BUFF_SIZE];
   socklen_t clilen;
   struct sockaddr_in cliaddr, servaddr;
+  Request *sendBuff;
+  Request *rcvBuff = malloc(sizeof(Request));
 
   //Step 1: Construct a TCP socket to listen connection request
   if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -128,19 +124,18 @@ int main(int argc, char *argv[])
         continue;
       if (FD_ISSET(sockfd, &readfds))
       {
-        ret = receiveData(sockfd, rcvBuff, BUFF_SIZE, 0);
+        ret = receiveData(sockfd, rcvBuff, sizeof(Request), 0);
         if (ret <= 0)
         {
           FD_CLR(sockfd, &allset);
           close(sockfd);
           client[i] = -1;
         }
-
         else
         {
-          int responseCode;
-          
-          sendData(sockfd, sendBuff, sizeof(responseCode), 0);
+          sendBuff = handleRequest(rcvBuff);
+          ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+
           if (ret <= 0)
           {
             FD_CLR(sockfd, &allset);
@@ -156,28 +151,4 @@ int main(int argc, char *argv[])
   }
 
   return 0;
-}
-
-void processData(char *in, char *out)
-{
-  strcpy(out, in);
-}
-
-int receiveData(int s, char *buff, int size, int flags)
-{
-  int n;
-  n = recv(s, buff, size, flags);
-  if (n < 0)
-    perror("Error: ");
-  return n;
-}
-
-int sendData(int s, char *buff, int size, int flags)
-{
-  int n;
-
-  n = send(s, buff, size, flags);
-  if (n < 0)
-    perror("Error: ");
-  return n;
 }

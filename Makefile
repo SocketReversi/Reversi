@@ -3,7 +3,7 @@ CFLAGS = -I
 LIBS = -lm
 SERVER = server
 CLIENT = client
-
+GTK = `pkg-config --libs --cflags gtk+-3.0`
 # Header file
 DEPS = $(wildcard lib/*.h)
 
@@ -12,7 +12,7 @@ source = $(wildcard src/*.c)
 source_services = $(wildcard src/services/*.c)
 source_ultilities = $(wildcard src/ultilities/*.c)
 source_validations = $(wildcard src/validations/*.c)
-output = $(wildcard output/*)
+
 # Object file
 main = $(patsubst %.c,%.o,$(source))
 services = $(patsubst %.c,%.o,$(source_services))
@@ -26,13 +26,13 @@ libs = $(services) $(ultilities) $(validations)
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): src/$(SERVER).o $(libs)
-	$(CC) -o output/$@ $^ $(CFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
-$(CLIENT): src/$(CLIENT).o $(libs)
-	$(CC) -o output/$@ $^ $(CFLAGS) $(LIBS)
+$(CLIENT): src/$(CLIENT).o $(libs) 
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< 
+	$(CC) -c -o $@ $< $(GTK)
 
-clean: $(libs) $(main) $(output)
-	rm -rf $(libs) $(main) $(output)
+clean: $(libs) $(main) $(SERVER) $(CLIENT)
+	rm -rf $(libs) $(main) $(SERVER) $(CLIENT)
