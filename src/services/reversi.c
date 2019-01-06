@@ -23,7 +23,6 @@ void initialize (const int n) {
 
 
 void finalize ( ) {
-	
 	int i;
 	for ( i=0; i < size; i++ ) {
 		free(board[i]);
@@ -233,7 +232,6 @@ int reverse ( int m, int n ) {
 	return -1;
 }
 
-
 //Xac dinh ben nao chien thang-------------------------------------------//
 int winner ( ) {
 	int i, j;
@@ -253,15 +251,14 @@ int winner ( ) {
 	else              return NONE;
 }
 
-int main ( int argc, char** argv ) {
-  	
+//choi game-------------------------------------------//
+int play(){
 	int m, n;  	   
 	int result = 1;
-
-	//xac dinh kich thuoc cho ban co-----------//
+	//xac dinh kich thuoc cho ban co
 	initialize(8);    
 
-	//bat dau choi-----------------------------//  
+	//bat dau choi 
 	while ( result > 0 ) {
 		display();
 		// if (current == AI) result = AI_move();

@@ -17,3 +17,4 @@ void display();
 int isReversible ( const int m, const int n );
 int reverse( int m, int n );
 int winner();
+int play();
