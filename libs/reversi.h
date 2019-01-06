@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 #define BLACK  1
 #define NONE   0
 #define WHITE -1

@@ -4,7 +4,7 @@
 #include "../../libs/request.h"
 #include "../../libs/account.h"
 #include "../../libs/file.h"
-#include "../../libs/server.h"
+#include "../../libs/serverHandle.h"
 
 FILE *open(char *filename, char *action) {
 	FILE *file = fopen(filename, action);
@@ -29,13 +29,28 @@ GSList *importUserFromFileToList() {
   char username[30], password[30];
   int id, point, status;
 
-  while (!feof(file)) {
+  while(1) {
     fscanf(file, "%s %s %d %d", username, password, &point, &status);
-
-    account *user = createAccount(username, password, point, status);
-
+    if(feof(file))
+      break;
+    account *user = createAccount(username, password, point, 0 , status);
     list = g_slist_append(list, user);
   }
-
+  fclose(file);
   return list;
+}
+
+void updateData(GSList *list){
+  FILE *f = open(PATH_FILE, "w");
+
+  if (f == NULL) {
+    exit(0);
+  }
+  GSList *var = list;
+  while(var != NULL){
+    account *acc = var->data;
+    fprintf(f,"%s %s %d %d\n",acc->username,acc->password,0,1);
+    var = var->next;
+  }
+  fclose(f);
 }

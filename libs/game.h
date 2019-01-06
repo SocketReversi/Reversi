@@ -2,8 +2,10 @@
 #define EMPTY -1
 #define WAITING 11
 #define FULL 22
+#define SIZE 8
 
 typedef struct tableGame {
+	int board[SIZE][SIZE];
 	int master;
 	int guest;
 	int state;

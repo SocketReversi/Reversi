@@ -19,7 +19,7 @@
 
 #include "../libs/account.h"
 #include "../libs/request.h"
-#include "../libs/server.h"
+#include "../libs/serverHandle.h"
 #include "../libs/valid.h"
 #include "../libs/file.h"
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
   //Init user data
   GSList *listUser = importUserFromFileToList();
-
+  printListUser(listUser);
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-          sendBuff = handleRequest(rcvBuff);
+          sendBuff = handleRequest(rcvBuff,listUser);
           ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           if (ret <= 0)

@@ -9,7 +9,7 @@
 #include "../libs/account.h"
 #include "../libs/valid.h"
 #include "../libs/request.h"
-#include "../libs/client.h"
+#include "../libs/clientHandle.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,10 +48,12 @@ int main(int argc, char *argv[])
 
     bytes_sent = sendData(client_sock, request, sizeof(Request), 0);
 
-    if (bytes_sent <= 0)
-    {
+    if (bytes_sent <= 0){
       perror("\nError: ");
       break;
+    }
+    else{
+      printf("Send successfully!\n");
     }
 
     //receive echo reply

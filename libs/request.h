@@ -3,11 +3,7 @@
  **/
 typedef enum {
   LOGIN = 1,
-  USER_LOGIN,
-  PASS_LOGIN,
   REGISTER,
-  USER_REGISTER,
-  PASS_REGISTER,
   LOGOUT,
   JOIN,
   LEAVE,
@@ -19,9 +15,7 @@ typedef enum {
  **/
 typedef enum {
   SUCCESS = 20,
-  CAN_PASS_LOGIN,
   LOGIN_SUCCESS,
-  CAN_PASS_REGISTER,
   REGISTER_SUCCESS,
   LOGOUT_SUCCESS,
   GO_GROUP,
@@ -33,9 +27,9 @@ typedef enum {
  **/
 typedef enum {
   EMPTY = 40,
-  USER_NOT_EXIST,
-  PASS_INVALID,
-  USER_EXIST,
+  LOGIN_FAIL,
+  REGISTER_FAIL,
+  LOGOUT_FAIL,
   NOT_LOGIN,
   CANT_JOIN
 } ERROR;
@@ -44,10 +38,13 @@ typedef enum {
 typedef struct Request {
   int opcode;
   char message[50];
+  char username[50];
+  char password[50];
+  int doc;
+  int ngang;
 } Request;
 
 // Method
 void processData(char *in, char *out);
 int receiveData(int s, Request *buff, int size, int flags);
 int sendData(int s, Request *buff, int size, int flags);
-void renderMessage(Request *request);
