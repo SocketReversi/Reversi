@@ -4,17 +4,13 @@
 #define BLACK  1
 #define NONE   0
 #define WHITE -1
+#define SIZE 4
+                   
+int current = BLACK;        
 
-int** board;         
-                 
-int size;            
-int current = BLACK; 
-int count;          
-
-void initialize (const int n);
-void finalize();
-void display();
-int isReversible ( const int m, const int n );
-int reverse( int m, int n );
-int winner();
-int play();
+void initialize (int board[SIZE][SIZE]);
+void display(int board[SIZE][SIZE]);
+int isReversible ( const int m, const int n , int board[SIZE][SIZE]);
+int reverse( int m, int n , int board[SIZE][SIZE]);
+int winner(int board[SIZE][SIZE]);
+int play(int board[SIZE][SIZE]);
