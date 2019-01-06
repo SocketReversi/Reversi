@@ -1,4 +1,4 @@
-#include "../libs/reversi.h"
+#include "../../libs/reversi.h"
 #include <stdio.h>
 #include <stdlib.h>
 
