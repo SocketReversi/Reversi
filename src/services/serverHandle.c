@@ -303,40 +303,7 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
             strcpy(sendRequest->message,"Nuoc co khong hop le!");
           }else{
             sendRequest->opcode = MOVE_SUCCESS;
-            printf("Turn ban dau: %d\n",table[findID(client , table)].turn);
-            printf("Gia tri master:%d\n",table[findID(client , table)].master);
-            printf("Gia tri guest :%d\n",table[findID(client , table)].guest);
-
-
-            if(table[findID(client, table)].turn == table[findID(client, table)].master){
-               table[findID(client, table)].turn = table[findID(client, table)].guest;
-            }
-            else if(table[findID(client, table)].turn == table[findID(client, table)].guest){
-              table[findID(client, table)].turn = table[findID(client, table)].master;
-            }
             strcpy(sendRequest->message,"OK! Nuoc co hop le!");
-
-
-            //kiem tra nuoc co-----------------------------//
-            printf("Turn ve sau: %d\n",table[findID(client , table)].turn);
-            printf("Gia tri master:%d\n",table[findID(client , table)].master);
-            printf("Gia tri guest :%d\n",table[findID(client , table)].guest);
-
-            if(table[findID(client , table)].turn == table[findID(client , table)].master){
-              sendRequest->turn = 1;printf("%d\n",sendRequest->turn );
-              sendData(table[findID(client , table)].master, sendRequest, sizeof(Request), 0);
-              sendRequest->turn = 0;printf("%d\n",sendRequest->turn );
-              sendData(table[findID(client , table)].guest, sendRequest, sizeof(Request), 0);
-
-            }
-            else if(table[findID(client , table)].turn == table[findID(client , table)].guest){
-              sendRequest->turn = 0;printf("%d\n",sendRequest->turn );
-              sendData(table[findID(client , table)].master, sendRequest, sizeof(Request), 0);
-              sendRequest->turn = 1;printf("%d\n",sendRequest->turn );
-              sendData(table[findID(client , table)].guest, sendRequest, sizeof(Request), 0);
-            }
-
-            //ket thuc kiem tra nuoc co---------------------------//
           }
         }
       }

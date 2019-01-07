@@ -175,7 +175,7 @@ int main(int argc, char *argv[]){
 
           // }
           
-          else if(sendBuff->opcode != MOVE_SUCCESS){
+          else {
             int id = findIDgamer(sockfd,table);
             if(id > -1 && id < MAX_TABLE){
               if(table[id].guest != EMPTY)

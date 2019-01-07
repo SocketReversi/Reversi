@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
     //receive echo reply
     bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
-    display(request->board);
+    // printf("Turn in request:%d\n",request->turn);
     if (bytes_received < 0){
       perror("\nError: ");
       break;
@@ -69,19 +69,7 @@ int main(int argc, char *argv[])
       break;
     }
 
-    if(renderMessage(request) == WAIT){
-      //receive echo reply
-      bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
-      display(request->board);
-      if (bytes_received < 0){
-        perror("\nError: ");
-        break;
-      }
-      else if (bytes_received == 0){
-        printf("Connection closed.\n");
-        break;
-      }
-    }
+    renderMessage(request);
   }
 
   //Step 4: Close socket

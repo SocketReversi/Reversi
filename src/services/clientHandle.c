@@ -14,7 +14,7 @@ Request *clientHandle()
     printf("\n\n");
     printf("Opcode: ");
     scanf("%d", &select);
-  } while(select < LOGIN && select > MOVE);
+  } while(select < LOGIN || select > MOVE);
   switch(select){
 
     case LOGIN: //1
@@ -58,6 +58,17 @@ Request *clientHandle()
       scanf("%d",&request->doc);
       printf("NGANG: ");
       scanf("%d",&request->ngang);
+      while(request->doc < 0 || request->doc >7 || request->ngang < 0 || request->ngang >7){
+        
+        printf("Nuoc co khong hop le! Nhap lai\n");
+        printf("MOVE\nDOC  :");
+        scanf("%d",&request->doc);
+        printf("NGANG: ");
+        scanf("%d",&request->ngang);
+      }
+      break;
+
+    default:
       break;
 
   }
@@ -67,7 +78,7 @@ Request *clientHandle()
   return request;
 }
 
-int renderMessage(Request *request) {
+void renderMessage(Request *request) {
   printf("\n-----------------------------\nMessage:!\n");
   switch(request->opcode){
 
@@ -86,14 +97,6 @@ int renderMessage(Request *request) {
     case MOVE_SUCCESS:
       display(request->board);
       printf("%s\n", request->message);
-      printf("Turn :%d\n",request->turn);
-      if(request->turn == 1){
-        printf("[%d]Tiep tuc danh!\n",request->turn);
-        return CONTINUE;
-      }else if(request->turn == 0){
-        printf("[%d]Doi nguoi choi khac danh...\n",request->turn);
-        return WAIT;
-      }
       break;
 
     case MOVE_FAIL:
@@ -105,6 +108,4 @@ int renderMessage(Request *request) {
       printf("%s\n", request->message);
       break;
   }
-
-  return CONTINUE;
 }

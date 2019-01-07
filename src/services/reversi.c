@@ -30,7 +30,7 @@ void display (int board[SIZE][SIZE]) {
 				            break;
 				case WHITE: printf(" o");
 				            break;
-				case NONE : printf(" -");
+				default: printf(" -");
 				            break;
 			}
 		}
