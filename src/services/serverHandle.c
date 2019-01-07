@@ -6,21 +6,27 @@
 #include "../../libs/account.h"
 #include "../../libs/file.h"
 #include "../../libs/serverHandle.h"
+#include "../../libs/reversi.h"
 
 void createTableList(tableGame table[MAX_TABLE]){
   for(int i=0;i<MAX_TABLE;i++){
     table[i].state = EMPTY;
     table[i].master = EMPTY;
     table[i].guest = EMPTY;
-    table[i].id = i;    
+    table[i].id = i;   
+    table[i].result = 1;
+    table[i].current = BLACK; 
   }
 }
 
 int createTable(int IDmaster,tableGame table[MAX_TABLE]){
   for(int i=0;i<MAX_TABLE;i++){
     if(table[i].state == EMPTY){
+
       table[i].master = IDmaster;
       table[i].state  = WAITING;
+      initialize(table[i].board); //khoi tao ban co
+
       return 1; //tao thanh cong 1 ban choi moi
     }
   }
@@ -98,6 +104,15 @@ void printListUser(GSList *list){
           );
 
     var = var->next;
+  }
+}
+
+void copyBoard(int board1[8][8], int board2[8][8]){
+
+  for(int i=0; i<8; i++){
+    for(int j=0; j<8; j++){
+      board1[i][j] = board2[i][j];
+    }
   }
 }
 
@@ -179,12 +194,12 @@ Request *handleRequest(Request *request, GSList *listUser)
         account *user = createAccount(request->username,request->password, 0, 0 , 1);
         listUser = g_slist_append(listUser, user);
         updateData(listUser);
+        sendRequest->opcode = REGISTER_SUCCESS;
         strcpy(sendRequest->message,"Success! Dang ki thanh cong!");
       }else{
         sendRequest->opcode = REGISTER_FAIL;
-        strcpy(sendRequest->message,"Fail! Dang ki that bai 'Ten tai khoan da ton tai!'");
+        strcpy(sendRequest->message,"Fail! Dang ki that bai!");
       }
-      //updateData(listUser);
       printListUser(listUser);
       break;
 
@@ -209,14 +224,94 @@ Request *groupClient(Request *request, tableGame table[MAX_TABLE], int client){
         strcpy(sendRequest->message,"Fail!Tao phong that bai!");
       }else{
         sendRequest->opcode = CREATE_SUCCESS;
-        strcpy(sendRequest->message,"Success! Tao phong thanh cong");
+        strcpy(sendRequest->message,"Success! Tao phong thanh cong!");
       }
+      printTable(table);
       break;
 
     case JOIN:
+      if(joinTable(client,table) == 0){
+        sendRequest->opcode = JOIN_FAIL;
+        strcpy(sendRequest->message,"Fail! Cac ban choi da day!");
+      }else{
+        sendRequest->opcode = JOIN_SUCCESS;
+        strcpy(sendRequest->message,"Success! Tham gia thanh cong!");
+      }
+      printTable(table);
       break;
 
     case LEAVE:
+      if(findID(client , table) != EMPTY){ //tim thay nguoi choi trong ban
+        sendRequest->opcode = LEAVE_SUCCESS;
+        strcpy(sendRequest->message,"Nguoi choi da roi ban!Ban choi da huy!");
+      }else{
+        sendRequest->opcode = LEAVE_FAIL;
+        strcpy(sendRequest->message,"Roi ban that bai!");
+      }
+      break;
+
+    default:
+      return NULL;
+  }
+
+  return sendRequest;
+}
+
+Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
+
+  Request *sendRequest = malloc(sizeof(Request));
+  memset(request->message, '\0', 50);
+
+  switch(request->opcode){
+
+    case PLAY:
+
+      if(findID(client, table) != EMPTY){
+        sendRequest->opcode = PLAY_SUCCESS;
+        initialize(sendRequest->board);
+        strcpy(sendRequest->message,"OK! Bat dau choi");
+      }else{
+        sendRequest->opcode = PLAY_FAIL;
+        strcpy(sendRequest->message,"Khong the choi! Chua tham gia ban choi nao!");
+      }
+
+      break;
+
+    case MOVE:
+
+      if(findID(client, table)!= EMPTY){
+
+        if(table[findID(client, table)].result != 0){
+
+          value message; //luu trang thai ban co
+          message = reverse(request->doc, 
+                            request->ngang, 
+                            table[findID(client, table)].board,
+                            table[findID(client, table)].current
+                            );
+
+          //copy co pho de gui cho client 
+          copyBoard(sendRequest->board, table[findID(client, table)].board);
+
+          table[findID(client, table)].result = message.state;
+          table[findID(client, table)].current = message.color;
+
+          if(table[findID(client, table)].result == 0 ){
+            sendRequest->opcode = MOVE_FAIL;
+            strcpy(sendRequest->message,"Nuoc co khong hop le!");
+          }else{
+            sendRequest->opcode = MOVE_SUCCESS;
+            strcpy(sendRequest->message,"OK! Tiep tuc");
+          }
+
+        }
+
+      }
+      else{
+        sendRequest->opcode = MOVE_FAIL;
+        strcpy(sendRequest->message,"Chua tham gia ban choi nao!");
+      }
+
       break;
 
     default:

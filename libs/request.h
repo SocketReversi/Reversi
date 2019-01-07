@@ -8,6 +8,7 @@ typedef enum {
   CREATE,
   JOIN,
   LEAVE,
+  PLAY,
   MOVE,
 } CLIENT_REQUEST;
 
@@ -21,6 +22,7 @@ typedef enum {
   CREATE_SUCCESS,
   JOIN_SUCCESS,
   LEAVE_SUCCESS,
+  PLAY_SUCCESS,
   MOVE_SUCCESS,
 } SERVER_RESPONSE;
 
@@ -28,18 +30,20 @@ typedef enum {
  ** Error opcode
  **/
 typedef enum {
-  EMPTY = 40,
-  LOGIN_FAIL,
+  LOGIN_FAIL = 40,
   REGISTER_FAIL,
   LOGOUT_FAIL,
   CREATE_FAIL,
   JOIN_FAIL,
+  LEAVE_FAIL,
+  PLAY_FAIL,
   MOVE_FAIL,
 } ERROR;
 
 // Request struct
 typedef struct Request {
   int opcode;
+  int board[8][8]; //Du lieu luu CO PHO
   char message[50];
   char username[50];
   char password[50];

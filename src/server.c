@@ -23,8 +23,7 @@
 #include "../libs/valid.h"
 #include "../libs/file.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
   paramsServerValid(argc);
   // Set open port
   int PORT = atoi(argv[1]);
@@ -142,12 +141,48 @@ int main(int argc, char *argv[])
           if(sendBuff == NULL){
             sendBuff = groupClient(rcvBuff, table, sockfd);
           }
+          if(sendBuff == NULL){
+            sendBuff = playGame(rcvBuff, table, sockfd);
+          }
+
+          //SEND DATA TO CLIENT--------------------------//
+
           if(   sendBuff->opcode == LOGIN_SUCCESS||
+                sendBuff->opcode == LOGIN_FAIL||
                 sendBuff->opcode == REGISTER_SUCCESS||
+                sendBuff->opcode == REGISTER_FAIL||
                 sendBuff->opcode == LOGOUT_SUCCESS||
-                sendBuff->opcode == CREATE_SUCCESS||
-                sendBuff->opcode == CREATE_FAIL)
+                sendBuff->opcode == LOGOUT_FAIL||
+                sendBuff->opcode == JOIN_FAIL||
+                sendBuff->opcode == CREATE_FAIL||
+                sendBuff->opcode == LEAVE_FAIL||
+                sendBuff->opcode == MOVE_SUCCESS||
+                sendBuff->opcode == PLAY_SUCCESS||
+                sendBuff->opcode == PLAY_FAIL||
+                sendBuff->opcode == MOVE_SUCCESS||
+                sendBuff->opcode == MOVE_FAIL){
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+          }
+
+          else if(sendBuff->opcode == LEAVE_SUCCESS){
+
+            sendData(table[findID(sockfd , table)].master, sendBuff, sizeof(Request), 0);
+            sendData(table[findID(sockfd , table)].guest, sendBuff, sizeof(Request), 0);
+            leaveTable(sockfd,table);
+            printTable(table);
+          }
+
+          else{
+            int id = findIDgamer(sockfd,table);
+            if(id > -1 && id < MAX_TABLE){
+              if(table[id].guest != EMPTY)
+                sendData(table[id].guest, sendBuff, sizeof(Request), 0);
+            }
+            else if(id >= MAX_TABLE){
+              sendData(table[id-MAX_TABLE].master, sendBuff, sizeof(Request), 0);
+            }
+          }
+          //DONE HANDING DATA TO SEND-------------------//
 
           if (ret <= 0)
           {

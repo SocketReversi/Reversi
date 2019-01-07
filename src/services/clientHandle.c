@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../../libs/request.h"
+#include "../../libs/reversi.h"
 #include "../../libs/clientHandle.h"
 
 Request *clientHandle()
@@ -10,7 +11,8 @@ Request *clientHandle()
   Request *request = malloc(sizeof(Request));
 
   do {
-    printf("\n----------\nOpcode: ");
+    printf("1.LOGIN |2.REGISTER |3.LOGOUT |4.CREATE |5.JOIN |6.LEAVE |7.PLAY |8.MOVE ]\n");
+    printf("Opcode: ");
     scanf("%d", &select);
   } while(select < LOGIN && select > MOVE);
   switch(select){
@@ -43,14 +45,29 @@ Request *clientHandle()
       request->password[strlen(request->password) - 1] = '\0';
       break;
 
-    case JOIN: //4
+    case CREATE:
+      while(getchar()!='\n'); 
+      break;
+
+    case JOIN: //5
       while(getchar()!='\n');
       break;
 
-    case LEAVE:
+    case LEAVE://6
+      while(getchar()!='\n');
       break;
 
-    case MOVE:
+    case PLAY://7
+      while(getchar()!='\n');
+      break;
+
+    case MOVE://8
+      while(getchar()!='\n');
+      int x,y;
+      printf("DOC   :");scanf("%d",&x);
+      printf("NGANG :");scanf("%d",&y);
+      request->doc = x;
+      request->ngang = y;
       break;
 
   }
@@ -62,28 +79,29 @@ Request *clientHandle()
 
 void renderMessage(Request *request) {
   printf("\n-----------\nMessage from server!\n");
-  printf("%s\n", request->message);
-  //     break;
-  // switch(request->opcode){
+  
+  switch(request->opcode){
 
-  //   case LOGIN_SUCCESS:
-  //     printf("%s %s\n", request->message, request->username);
-  //     break;
+    case LOGIN_SUCCESS:
+      printf("%s %s\n", request->message, request->username);
+      break;
 
-  //   case LOGIN_FAIL:
-  //     printf("%s\n", request->message);
-  //     break;
+    case LOGOUT_SUCCESS:
+      printf("%s %s\n", request->message, request->username);
+      break;
 
-  //   case LOGOUT_SUCCESS:
-  //     printf("%s %s\n", request->message, request->username);
-  //     break;
+    case PLAY_SUCCESS:
+      display(request->board);
+      break;
 
-  //   case LOGOUT_FAIL:
-  //     printf("%s\n", request->message);
-  //     break;
+    case MOVE_SUCCESS:
+      display(request->board);
+      printf("%s\n", request->message);
+      break;
 
-  //   case REGISTER_SUCCESS:
-  //     printf
-  // }
+    default:
+      printf("%s\n", request->message);
+      break;
+  }
 
 }
