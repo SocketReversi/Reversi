@@ -33,6 +33,11 @@ int main(int argc, char *argv[])
   GSList *listUser = importUserFromFileToList();
   printListUser(listUser);
 
+  tableGame table[MAX_TABLE];
+  createTableList(table);
+  printf("Created 'Space' to Play for Clients!\n");
+  printTable(table);
+
   int i, maxi, maxfd, listenfd, connfd, sockfd;
   int nready, client[FD_SETSIZE];
   ssize_t ret;
@@ -134,7 +139,15 @@ int main(int argc, char *argv[])
         else
         {
           sendBuff = handleRequest(rcvBuff,listUser);
-          ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+          if(sendBuff == NULL){
+            sendBuff = groupClient(rcvBuff, table, sockfd);
+          }
+          if(   sendBuff->opcode == LOGIN_SUCCESS||
+                sendBuff->opcode == REGISTER_SUCCESS||
+                sendBuff->opcode == LOGOUT_SUCCESS||
+                sendBuff->opcode == CREATE_SUCCESS||
+                sendBuff->opcode == CREATE_FAIL)
+            ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           if (ret <= 0)
           {

@@ -15,7 +15,7 @@ Request *clientHandle()
   } while(select < LOGIN && select > MOVE);
   switch(select){
 
-    case LOGIN:
+    case LOGIN: //1
       while(getchar()!='\n');
       printf("LOG IN\nUsername: ");
       fgets(request->username,50,stdin);
@@ -25,7 +25,7 @@ Request *clientHandle()
       request->password[strlen(request->password) - 1] = '\0';
       break;
 
-    case LOGOUT:
+    case LOGOUT: //3
       while(getchar()!='\n');
       printf("LOG OUT\nUsername: ");
       fgets(request->username,50,stdin);
@@ -33,7 +33,7 @@ Request *clientHandle()
       printf("%s\n", request->username);
       break;
 
-    case REGISTER:
+    case REGISTER: //2
       while(getchar()!='\n');
       printf("REGISTER\nUsername: ");
       fgets(request->username,50,stdin);
@@ -43,7 +43,8 @@ Request *clientHandle()
       request->password[strlen(request->password) - 1] = '\0';
       break;
 
-    case JOIN:
+    case JOIN: //4
+      while(getchar()!='\n');
       break;
 
     case LEAVE:

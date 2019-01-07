@@ -5,6 +5,7 @@ typedef enum {
   LOGIN = 1,
   REGISTER,
   LOGOUT,
+  CREATE,
   JOIN,
   LEAVE,
   MOVE,
@@ -14,12 +15,13 @@ typedef enum {
  ** Server response opcode
  **/
 typedef enum {
-  SUCCESS = 20,
-  LOGIN_SUCCESS,
+  LOGIN_SUCCESS = 20,
   REGISTER_SUCCESS,
   LOGOUT_SUCCESS,
-  GO_GROUP,
-  CAN_LEAVE
+  CREATE_SUCCESS,
+  JOIN_SUCCESS,
+  LEAVE_SUCCESS,
+  MOVE_SUCCESS,
 } SERVER_RESPONSE;
 
 /**
@@ -30,8 +32,9 @@ typedef enum {
   LOGIN_FAIL,
   REGISTER_FAIL,
   LOGOUT_FAIL,
-  NOT_LOGIN,
-  CANT_JOIN
+  CREATE_FAIL,
+  JOIN_FAIL,
+  MOVE_FAIL,
 } ERROR;
 
 // Request struct
