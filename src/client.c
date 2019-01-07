@@ -10,6 +10,7 @@
 #include "../libs/valid.h"
 #include "../libs/request.h"
 #include "../libs/clientHandle.h"
+#include "../libs/reversi.h"
 
 int main(int argc, char *argv[])
 {
@@ -53,24 +54,34 @@ int main(int argc, char *argv[])
       break;
     }
     else{
-      printf("Send successfully!\n");
+      printf("\n");
     }
 
     //receive echo reply
     bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
-
-    if (bytes_received < 0)
-    {
+    display(request->board);
+    if (bytes_received < 0){
       perror("\nError: ");
       break;
     }
-    else if (bytes_received == 0)
-    {
+    else if (bytes_received == 0){
       printf("Connection closed.\n");
       break;
     }
 
-    renderMessage(request);
+    if(renderMessage(request) == WAIT){
+      //receive echo reply
+      bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
+      display(request->board);
+      if (bytes_received < 0){
+        perror("\nError: ");
+        break;
+      }
+      else if (bytes_received == 0){
+        printf("Connection closed.\n");
+        break;
+      }
+    }
   }
 
   //Step 4: Close socket

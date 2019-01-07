@@ -4,16 +4,19 @@
 #define FULL 22
 #define BACKLOG 20 /* Number of allowed connections */
 #define BUFF_SIZE 1024
+#define MASTER 111
+#define GUEST  112
 
 typedef struct tableGame {
-	int id;
-	int master;
-	int guest;
-	int state;
+	int id;     //id ban co
+	int master; //chu
+	int guest;	//khach
+	int state;	//trang thai ban co
 	
-	int board[8][8];
-	int result;
-	int current;
+	int board[8][8]; //ban co
+	int turn; //luot di cua nguoi choi
+	int result; //ket qua tran co
+	int current; //trang thai hien tai cua mau quan co
 } tableGame;
 
 void createTableList(tableGame table[MAX_TABLE]);

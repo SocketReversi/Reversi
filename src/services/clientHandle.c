@@ -11,7 +11,7 @@ Request *clientHandle()
   Request *request = malloc(sizeof(Request));
 
   do {
-    printf("1.LOGIN |2.REGISTER |3.LOGOUT |4.CREATE |5.JOIN |6.LEAVE |7.PLAY |8.MOVE ]\n");
+    printf("\n\n");
     printf("Opcode: ");
     scanf("%d", &select);
   } while(select < LOGIN && select > MOVE);
@@ -40,7 +40,7 @@ Request *clientHandle()
       scanf("%s",request->password);
       break;
 
-    case CREATE:
+    case CREATE://4
       break;
 
     case JOIN: //5
@@ -67,9 +67,8 @@ Request *clientHandle()
   return request;
 }
 
-void renderMessage(Request *request) {
-  printf("\n-----------\nMessage from server!\n");
-  
+int renderMessage(Request *request) {
+  printf("\n-----------------------------\nMessage:!\n");
   switch(request->opcode){
 
     case LOGIN_SUCCESS:
@@ -87,6 +86,14 @@ void renderMessage(Request *request) {
     case MOVE_SUCCESS:
       display(request->board);
       printf("%s\n", request->message);
+      printf("Turn :%d\n",request->turn);
+      if(request->turn == 1){
+        printf("[%d]Tiep tuc danh!\n",request->turn);
+        return CONTINUE;
+      }else if(request->turn == 0){
+        printf("[%d]Doi nguoi choi khac danh...\n",request->turn);
+        return WAIT;
+      }
       break;
 
     case MOVE_FAIL:
@@ -99,4 +106,5 @@ void renderMessage(Request *request) {
       break;
   }
 
+  return CONTINUE;
 }

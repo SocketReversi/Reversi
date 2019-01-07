@@ -170,13 +170,12 @@ int main(int argc, char *argv[]){
             printTable(table);
 
           }
-          // else if(sendBuff->opcode == MOVE_SUCCESS){
-          //   sendData(table[findID(sockfd , table)].master, sendBuff, sizeof(Request), 0);
-          //   sendData(table[findID(sockfd , table)].guest, sendBuff, sizeof(Request), 0); 
+          // else if(sendBuff->opcode == MOVE_SUCCESS){  
+            
 
           // }
           
-          else{
+          else if(sendBuff->opcode != MOVE_SUCCESS){
             int id = findIDgamer(sockfd,table);
             if(id > -1 && id < MAX_TABLE){
               if(table[id].guest != EMPTY)

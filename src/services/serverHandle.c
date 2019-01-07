@@ -26,6 +26,7 @@ int createTable(int IDmaster,tableGame table[MAX_TABLE]){
       table[i].master = IDmaster;
       table[i].state  = WAITING;
       initialize(table[i].board); //khoi tao ban co
+      table[i].turn = table[i].master;
 
       return 1; //tao thanh cong 1 ban choi moi
     }
@@ -279,11 +280,11 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
 
     case MOVE:
 
-      if(findID(client, table)!= EMPTY){
+      if(findID(client, table)!= EMPTY){ //neu tim thay nguoi trong o trong ban choi
 
-        if(table[findID(client, table)].result != 0){
+        if(table[findID(client, table)].result != 0){ // neu tro choi chua ket thuc
 
-          value message; //luu trang thai ban co
+          value message; //tao bien luu trang thai ban co
           message = reverse(request->doc, 
                             request->ngang, 
                             table[findID(client, table)].board,
@@ -292,6 +293,7 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
 
           //copy co pho de gui cho client 
           copyBoard(sendRequest->board, table[findID(client, table)].board);
+          display(sendRequest->board);
 
           table[findID(client, table)].result = message.state;
           table[findID(client, table)].current = message.color;
@@ -301,7 +303,40 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
             strcpy(sendRequest->message,"Nuoc co khong hop le!");
           }else{
             sendRequest->opcode = MOVE_SUCCESS;
-            strcpy(sendRequest->message,"OK! Tiep tuc");
+            printf("Turn ban dau: %d\n",table[findID(client , table)].turn);
+            printf("Gia tri master:%d\n",table[findID(client , table)].master);
+            printf("Gia tri guest :%d\n",table[findID(client , table)].guest);
+
+
+            if(table[findID(client, table)].turn == table[findID(client, table)].master){
+               table[findID(client, table)].turn = table[findID(client, table)].guest;
+            }
+            else if(table[findID(client, table)].turn == table[findID(client, table)].guest){
+              table[findID(client, table)].turn = table[findID(client, table)].master;
+            }
+            strcpy(sendRequest->message,"OK! Nuoc co hop le!");
+
+
+            //kiem tra nuoc co-----------------------------//
+            printf("Turn ve sau: %d\n",table[findID(client , table)].turn);
+            printf("Gia tri master:%d\n",table[findID(client , table)].master);
+            printf("Gia tri guest :%d\n",table[findID(client , table)].guest);
+
+            if(table[findID(client , table)].turn == table[findID(client , table)].master){
+              sendRequest->turn = 1;printf("%d\n",sendRequest->turn );
+              sendData(table[findID(client , table)].master, sendRequest, sizeof(Request), 0);
+              sendRequest->turn = 0;printf("%d\n",sendRequest->turn );
+              sendData(table[findID(client , table)].guest, sendRequest, sizeof(Request), 0);
+
+            }
+            else if(table[findID(client , table)].turn == table[findID(client , table)].guest){
+              sendRequest->turn = 0;printf("%d\n",sendRequest->turn );
+              sendData(table[findID(client , table)].master, sendRequest, sizeof(Request), 0);
+              sendRequest->turn = 1;printf("%d\n",sendRequest->turn );
+              sendData(table[findID(client , table)].guest, sendRequest, sizeof(Request), 0);
+            }
+
+            //ket thuc kiem tra nuoc co---------------------------//
           }
         }
       }
