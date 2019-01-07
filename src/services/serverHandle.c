@@ -303,19 +303,16 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
             sendRequest->opcode = MOVE_SUCCESS;
             strcpy(sendRequest->message,"OK! Tiep tuc");
           }
-
         }
-
       }
       else{
         sendRequest->opcode = MOVE_FAIL;
         strcpy(sendRequest->message,"Chua tham gia ban choi nao!");
       }
-
       break;
 
     default:
-      return NULL;
+      strcpy(sendRequest->message,"Thao tac khong hop le");
   }
 
   return sendRequest;

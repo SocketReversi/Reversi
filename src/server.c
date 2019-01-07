@@ -156,10 +156,8 @@ int main(int argc, char *argv[]){
                 sendBuff->opcode == JOIN_FAIL||
                 sendBuff->opcode == CREATE_FAIL||
                 sendBuff->opcode == LEAVE_FAIL||
-                sendBuff->opcode == MOVE_SUCCESS||
                 sendBuff->opcode == PLAY_SUCCESS||
                 sendBuff->opcode == PLAY_FAIL||
-                sendBuff->opcode == MOVE_SUCCESS||
                 sendBuff->opcode == MOVE_FAIL){
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
           }
@@ -170,8 +168,14 @@ int main(int argc, char *argv[]){
             sendData(table[findID(sockfd , table)].guest, sendBuff, sizeof(Request), 0);
             leaveTable(sockfd,table);
             printTable(table);
-          }
 
+          }
+          // else if(sendBuff->opcode == MOVE_SUCCESS){
+          //   sendData(table[findID(sockfd , table)].master, sendBuff, sizeof(Request), 0);
+          //   sendData(table[findID(sockfd , table)].guest, sendBuff, sizeof(Request), 0); 
+
+          // }
+          
           else{
             int id = findIDgamer(sockfd,table);
             if(id > -1 && id < MAX_TABLE){

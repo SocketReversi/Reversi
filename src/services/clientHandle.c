@@ -18,56 +18,46 @@ Request *clientHandle()
   switch(select){
 
     case LOGIN: //1
-      while(getchar()!='\n');
+
       printf("LOG IN\nUsername: ");
-      fgets(request->username,50,stdin);
+      scanf("%s",request->username);
       printf("Password: ");
-      fgets(request->password,50,stdin);
-      request->username[strlen(request->username) - 1] = '\0';
-      request->password[strlen(request->password) - 1] = '\0';
+      scanf("%s",request->password);
       break;
 
     case LOGOUT: //3
-      while(getchar()!='\n');
+
       printf("LOG OUT\nUsername: ");
-      fgets(request->username,50,stdin);
-      request->username[strlen(request->username) - 1] = '\0';
+      scanf("%s",request->username);
       printf("%s\n", request->username);
       break;
 
     case REGISTER: //2
-      while(getchar()!='\n');
+
       printf("REGISTER\nUsername: ");
-      fgets(request->username,50,stdin);
+      scanf("%s",request->username);
       printf("Password: ");
-      fgets(request->password,50,stdin);
-      request->username[strlen(request->username) - 1] = '\0';
-      request->password[strlen(request->password) - 1] = '\0';
+      scanf("%s",request->password);
       break;
 
     case CREATE:
-      while(getchar()!='\n'); 
       break;
 
     case JOIN: //5
-      while(getchar()!='\n');
       break;
 
     case LEAVE://6
-      while(getchar()!='\n');
       break;
 
     case PLAY://7
-      while(getchar()!='\n');
       break;
 
     case MOVE://8
-      while(getchar()!='\n');
-      int x,y;
-      printf("DOC   :");scanf("%d",&x);
-      printf("NGANG :");scanf("%d",&y);
-      request->doc = x;
-      request->ngang = y;
+
+      printf("MOVE\nDOC  :");
+      scanf("%d",&request->doc);
+      printf("NGANG: ");
+      scanf("%d",&request->ngang);
       break;
 
   }
@@ -95,6 +85,11 @@ void renderMessage(Request *request) {
       break;
 
     case MOVE_SUCCESS:
+      display(request->board);
+      printf("%s\n", request->message);
+      break;
+
+    case MOVE_FAIL:
       display(request->board);
       printf("%s\n", request->message);
       break;
