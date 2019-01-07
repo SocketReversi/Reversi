@@ -40,7 +40,7 @@ void display (int board[SIZE][SIZE]) {
 
 
 //Kiem tra co the dao nguoc duoc quan co--------------//
-int isReversible ( const int m, const int n,int board[SIZE][SIZE] ) {
+int isReversible ( const int m, const int n,int board[SIZE][SIZE],int current ) {
 	int i, j;
 	int result = 0; 
 	int count = 0;  
@@ -111,14 +111,19 @@ int isReversible ( const int m, const int n,int board[SIZE][SIZE] ) {
 
 
 //Thuc hien dao nguoc quan co--------------------//
-int reverse ( int m, int n , int board[SIZE][SIZE]) {
+value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
 	
 	int i, j;
 	int reversed = 0;
+	value message; //luu tru gia tri tra ve cho ham
 
-	int reversible = isReversible(m, n, board);
+	int reversible = isReversible(m, n, board,current);
 
-	if ( !reversible ) return 0;
+	if ( !reversible ){
+		message.state = 0;
+		message.color = current;
+		return message;
+	}
 
 	board[m][n] = current;
 
@@ -199,8 +204,12 @@ int reverse ( int m, int n , int board[SIZE][SIZE]) {
 
 	for ( i=0; i < SIZE; i++ ) {
 		for ( j=0; j < SIZE; j++ ) {
-			if ( isReversible(i, j, board) ) { 
-				return reversed;          			}
+			if ( isReversible(i, j, board, current) ) { 
+				message.state = reversed;
+				message.color = current;
+
+				return message;          			
+			}
 		}
 	}
 
@@ -208,14 +217,17 @@ int reverse ( int m, int n , int board[SIZE][SIZE]) {
 	current = -current;
 	for ( i=0; i < SIZE; i++ ) {
 		for ( j=0; j < SIZE; j++ ) {
-			if ( isReversible(i, j, board) ) {
-				return reversed;
+			if ( isReversible(i, j, board,current) ) {
+				message.state = reversed;
+				message.color = current;
+				return message;
 			}
 		}
 	}
 	
-	
-	return -1;
+	message.state = -1;
+	message.color = current;
+	return message;
 }
 
 //Xac dinh ben nao chien thang-------------------------------------------//
@@ -239,13 +251,16 @@ int winner (int board[SIZE][SIZE] ) {
 
 //choi game-------------------------------------------//
 int play(int board[SIZE][SIZE]){
-	int m, n;  	   
-	int result = 1;
+	int m, n;  	 
+	int result = 1;  
+	int current = BLACK;
+
+	value message;
+	
 	//khoi tao ban
 	initialize(board);    
-
 	//bat dau choi 
-	while ( result > 0 ) {
+	while (result != 0) {
 		display(board);
 
 		if ( current == BLACK ) {
@@ -259,7 +274,11 @@ int play(int board[SIZE][SIZE]){
 			printf("Doc  :");scanf("%d",&m);
 			printf("Ngang:");scanf("%d",&n);
 			
-			result = reverse(m, n, board);
+			message = reverse(m, n, board,current);
+			result = message.state;
+			current = message.color;
+			printf("\n[Trang thai tro choi]-[%d]\n",result);
+			printf("Gia tri cua [current]-[%d]\n",current);
 			if ( result == 0 ) {
 				printf("(%d,%d) you can't place a stone here。\n", m, n);
 				printf("place again、");
