@@ -50,7 +50,7 @@ void updateData(GSList *list){
   GSList *var = list;
   while(var != NULL){
     account *acc = var->data;
-    fprintf(f,"%s %s %d %d\n",acc->username,acc->password,0,1);
+    fprintf(f,"%s %s %d %d\n",acc->username,acc->password,acc->point,acc->status);
     var = var->next;
   }
   fclose(f);

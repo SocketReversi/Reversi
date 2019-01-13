@@ -11,11 +11,12 @@
 #include "../../libs/reversi.h"
 
 //dung link list----------------------//
-GSList *createTable(GSList *listTable, int id){
+GSList *createTable(GSList *listTable, int id, char name[50]){
 
   table *var = malloc(sizeof(table));
 
   var->master = id;
+  strcpy(var->master_name , name); //them ten nguoi choi master
   var->guest = EMPTY;
   var->state = WAITING;
   var->result = 1;
@@ -30,7 +31,7 @@ GSList *createTable(GSList *listTable, int id){
 
 }
 
-int joinTable(GSList *listTable, int id){
+int joinTable(GSList *listTable, int id, char name[50]){
 
   GSList *var;
   var = listTable;
@@ -40,6 +41,7 @@ int joinTable(GSList *listTable, int id){
     if(node->state == WAITING){ //neu ban choi thieu nguoi
       printf("Tien hanh them nguoi choi\n");
       node->guest = id; //them khach vao ban choi
+      strcpy(node->guest_name , name); //them ten nguoi choi guest
       node->state = FULL; //cap nhat trang thai ban choi FULL
       return 1; //join thanh cong
     }
@@ -108,7 +110,7 @@ void printListUser(GSList *list){
   printf("Number account : (%d)\n",(int)g_slist_length(list));
   GSList *var;
   var = list;
-  printf("%-20s|%-20s|%-6s|%-6s|%-6s\n",
+  printf("%-20s|%-20s|%-10s|%-6s|%-6s\n",
           "Username",
           "Password",
           "Point",
@@ -117,7 +119,7 @@ void printListUser(GSList *list){
         );
   while(var != NULL){
     account *acc = var->data;
-    printf("%-20s|%-20s|   %-3d|   %-3d|   %-3d\n",
+    printf("%-20s|%-20s|%-10d|%-6d|%-6d\n",
             acc->username, 
             acc->password, 
             acc->point, 
@@ -165,6 +167,19 @@ account *find_User(GSList *list, Request *request){
     var = var->next;
   }
   return NULL;
+}
+
+//tim node trong GSList chua thong tin yeu cau-------//
+GSList *find(GSList *listUser, char name[50]){
+  GSList *result;
+  result = listUser;
+  while(result != NULL){
+    account *user = result->data;
+    if(strcmp(user->username , name) == 0)
+      break;
+    result = result->next;
+  }
+  return result;
 }
 
 int Register(GSList *listUser, Request *request){
@@ -222,7 +237,7 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
         sendRequest->opcode = LOGIN_FAIL;
         strcpy(sendRequest->message,"Fail! Tai khoan hoac mat khau khong dung!");
       }
-      printListUser(listUser);
+      //printListUser(listUser);
       break;
 
     case REGISTER:
@@ -239,7 +254,7 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
         sendRequest->opcode = REGISTER_FAIL;
         strcpy(sendRequest->message,"Fail! Dang ki that bai!");
       }
-      printListUser(listUser);
+      //printListUser(listUser);
       break;
 
     case LOGOUT:
@@ -267,7 +282,7 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
         sendRequest->opcode = LOGOUT_FAIL;
         strcpy(sendRequest->message,"Fail!Dang xuat that bai!"); 
       }
-      printListUser(listUser);
+      //printListUser(listUser);
       break;
 
     default:
@@ -278,7 +293,7 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
 }
 
 
-Request *groupClient(int state, Request *request, GSList *listTable, int client){
+Request *groupClient(int state, Request *request, GSList *listTable, int client, char user[50]){
 
   Request *sendRequest = malloc(sizeof(Request));
 
@@ -302,14 +317,14 @@ Request *groupClient(int state, Request *request, GSList *listTable, int client)
         break;
       }
 
-      if(joinTable(listTable, client) == 0){
+      if(joinTable(listTable, client, user) == 0){
         sendRequest->opcode = JOIN_FAIL;
         strcpy(sendRequest->message,"Fail! Khong tim thay ban choi!");
       }else{
         sendRequest->opcode = JOIN_SUCCESS;
         strcpy(sendRequest->message,"Success! Da co nguoi tham gia ban choi!");
       }
-      //printTable(table);
+
       break;
 
     case LEAVE:
@@ -327,19 +342,6 @@ Request *groupClient(int state, Request *request, GSList *listTable, int client)
         strcpy(sendRequest->message,"Roi ban that bai!");
       }
       break;
-
-    // case CHECK:
-    //   sendRequest->opcode = CHECK;
-    //   if(Player(listTable, client) == MASTER)
-    //     strcpy(sendRequest->message,"Ban la Master\n");
-    //   if(Player(listTable, client) == GUEST)
-    //     strcpy(sendRequest->message,"Ban la Guest\n");
-    //   break;
-
-    // case CHAT:
-    //   sendRequest->opcode = CHAT;
-    //   strcpy(sendRequest->message,request->message);
-    //   break;   
 
     default:
       return NULL;
@@ -397,6 +399,7 @@ Request *playGame(int state, Request *request, GSList *listTable, int client){
           //copy co pho de gui cho client 
           copyBoard(sendRequest->board, node->board);
 
+          //HIEN THI BAN CO --------------------------//
           display(sendRequest->board);
 
           node->result = message.state;
@@ -405,16 +408,16 @@ Request *playGame(int state, Request *request, GSList *listTable, int client){
           if(node->result == -1){//game the end
             sendRequest->opcode = END_GAME;
             if(winner(sendRequest->board) == BLACK)
-              strcpy(sendRequest->message,"Winner : x ! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"WINNER : x ! Tran dau ket thuc!\n");
             else if(winner(sendRequest->board) == WHITE)
-              strcpy(sendRequest->message,"Winner : o ! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"WINNER : o ! Tran dau ket thuc!\n");
             else if(winner(sendRequest->board) == NONE)
-              strcpy(sendRequest->message,"Game draw! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"GAME DRAW! Tran dau ket thuc!\n");
           }
 
           else if(node->result == 0 ){
             sendRequest->opcode = MOVE_FAIL;
-            strcpy(sendRequest->message,"Nuoc co FAIL!");
+            strcpy(sendRequest->message,"Nuoc co khong hop le!");
           }else{
             sendRequest->opcode = MOVE_SUCCESS;
             strcpy(sendRequest->message,"Luot cua ban!");

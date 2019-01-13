@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     do{
       //receive echo reply
       bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
-      // printf("Turn in request:%d\n",request->turn);
+
       if (bytes_received < 0){
         perror("\nError: ");
         break;
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
       }
 
       wait = renderMessage(request);
-      printf("Gia tri wait: %d\n",wait);
+
     }while(wait == 1);
   }
 

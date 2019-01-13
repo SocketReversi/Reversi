@@ -7,10 +7,14 @@
 #define MASTER 111
 #define GUEST  112
 
+#define POINT 100 //So diem + or - sau moi van co
+
 typedef struct ttable{
 
 	int master; //chu
+	char master_name[50];
 	int guest;	//khach
+	char guest_name[50];
 	int state;	//trang thai ban co
 	
 	int board[8][8]; //ban co
@@ -19,8 +23,8 @@ typedef struct ttable{
 	int current; //trang thai hien tai cua mau quan co
 }table;
 
-GSList *createTable(GSList *listTable, int id);
-int joinTable(GSList *listTable, int id);
+GSList *createTable(GSList *listTable, int id, char name[50]);
+int joinTable(GSList *listTable, int id, char name[50]);
 int Player(GSList *listTable, int id);
 
 GSList *findWithID(GSList *listTable, int id);
@@ -32,10 +36,11 @@ void copyBoard(int board1[8][8], int board2[8][8]);
 
 account *find_User_Pass(GSList *list, Request *request);
 account *find_User(GSList *list, Request *request);
+GSList *find(GSList *listUser, char name[50]);
 
 int Register(GSList *listUser, Request *request);
 int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]);
 
 Request *handleRequest(int state, Request *request, GSList *listUser, char user[50]);
-Request *groupClient(int state, Request *request, GSList *listTable, int client);
+Request *groupClient(int state, Request *request, GSList *listTable, int client, char user[50]);
 Request *playGame(int state, Request *request, GSList *listTable, int client);
