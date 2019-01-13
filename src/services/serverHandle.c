@@ -95,7 +95,7 @@ void printTable(GSList *list){
   var = list;
   printf("So ban choi online : (%d)\n",(int)g_slist_length(list));
   if(var == NULL){
-    printf("Chua co ban choi nao duoc tao!\n");
+    printf("[ Chua co ban choi nao duoc tao! ]\n");
   }
   while(var != NULL){
     table *node = var->data;

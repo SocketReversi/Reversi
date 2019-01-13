@@ -17,7 +17,6 @@ Request *clientHandle()
     scanf("%s", input);
     select = atoi(input);
   } while(select < LOGIN || select > MOVE);
-  printf("OPCODE cua client : %d\n",select);
   switch(select){
 
     case LOGIN: //1
@@ -48,14 +47,6 @@ Request *clientHandle()
 
     case JOIN: //5
       break;
-
-    // case CHECK://6
-    //   break;
-
-    // case CHAT: //7
-    //   printf("CHAT\nMessage: ");
-    //   scanf("%s",request->message);
-    //   break;
 
     case LEAVE://6
       break;
@@ -90,7 +81,7 @@ Request *clientHandle()
 }
 
 int renderMessage(Request *request) {
-  printf("*****\nReply from server :");
+  printf("\n[Reply from server]-> ");
   switch(request->opcode){
 
     case LOGIN_SUCCESS:
@@ -104,7 +95,7 @@ int renderMessage(Request *request) {
     case PLAY_SUCCESS:
       display(request->board);
       if(request->turn == 0){
-        printf("Cho nguoi choi con lai ...\n");
+        printf("Waitting ...\n");
         return 1;
       }
 
@@ -113,8 +104,10 @@ int renderMessage(Request *request) {
 
     case MOVE_SUCCESS:
       display(request->board);
-      if(request->turn == 0)
+      if(request->turn == 0){
+        printf("Waitting ...\n");
         return 1;
+      }
       printf("%s\n", request->message);
       break;
 
