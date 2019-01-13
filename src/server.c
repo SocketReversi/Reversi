@@ -39,7 +39,9 @@ int main(int argc, char *argv[]){
 
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
-  int nready, client[FD_SETSIZE];
+  int nready, client[FD_SETSIZE]; //so may khach toi da
+  int stateClient[FD_SETSIZE]; //trang thai tuong ung voi moi tai khoan Client
+  char user[FD_SETSIZE][50]; //so tai khoan tuong ung voi so may khach
   ssize_t ret;
   fd_set readfds, allset;
   socklen_t clilen;
@@ -78,6 +80,7 @@ int main(int argc, char *argv[]){
   for (i = 0; i < FD_SETSIZE; i++)
   {
     client[i] = -1; /* -1 indicates available entry */
+    stateClient[i] = UNKNOWN;
   }
   FD_ZERO(&allset);
   FD_SET(listenfd, &allset);
@@ -138,15 +141,56 @@ int main(int argc, char *argv[]){
         }
         else
         {
-          sendBuff = groupClient(rcvBuff, listTable, sockfd);
+          sendBuff = groupClient(stateClient[i], rcvBuff, listTable, sockfd);
           
           if(sendBuff == NULL){
-            sendBuff = handleRequest(rcvBuff,listUser);
+            sendBuff = handleRequest(stateClient[i], rcvBuff,listUser,user[i]);
           }
           if(sendBuff == NULL){
-            sendBuff = playGame(rcvBuff, listTable, sockfd);
+            sendBuff = playGame(stateClient[i], rcvBuff, listTable, sockfd);
           }
           printf("Ma tra ve : %d\n",sendBuff->opcode );
+
+          //setting State for client---------------//
+            if( sendBuff->opcode == LOGIN_FAIL||
+                sendBuff->opcode == REGISTER_SUCCESS||
+                sendBuff->opcode == REGISTER_FAIL||
+                sendBuff->opcode == LOGOUT_SUCCESS
+              ){
+              stateClient[i] = UNKNOWN;
+
+            }else if(
+                sendBuff->opcode == LOGIN_SUCCESS||
+                sendBuff->opcode == LOGOUT_FAIL||
+                sendBuff->opcode == LEAVE_SUCCESS||
+                sendBuff->opcode == CREATE_FAIL||
+                sendBuff->opcode == JOIN_FAIL||
+                sendBuff->opcode == END_GAME
+              ){
+              stateClient[i] = STATE1;
+
+            }else if(
+                sendBuff->opcode == CREATE_SUCCESS||
+                sendBuff->opcode == JOIN_SUCCESS||
+                sendBuff->opcode == LEAVE_FAIL
+              ){
+              stateClient[i] = STATE2;
+
+            }else if(
+                sendBuff->opcode == PLAY_SUCCESS||
+                sendBuff->opcode == MOVE_SUCCESS||
+                sendBuff->opcode == MOVE_FAIL
+              ){
+              stateClient[i] = STATE3;
+
+            }else if(
+              sendBuff->opcode == MOVE_SUCCESS
+              ){
+              stateClient[i] = STATE4;
+
+            }
+          //end setting state for client-----------//
+
           //SEND DATA TO CLIENT--------------------------//
 
           if(   sendBuff->opcode == LOGIN_SUCCESS||
@@ -162,7 +206,12 @@ int main(int argc, char *argv[]){
                 
                 sendBuff->opcode == PLAY_FAIL||
                 sendBuff->opcode == MOVE_FAIL||
-                sendBuff->opcode == CHECK){
+                // sendBuff->opcode == CHECK||
+                sendBuff->opcode == REQUEST_FAIL){
+
+            if(sendBuff->opcode == LOGIN_SUCCESS){
+              strcpy(user[i], sendBuff->username); //lay thong tin ve user dang online tuong ung voi may khach
+            }
             printTable(listTable);
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
@@ -173,16 +222,35 @@ int main(int argc, char *argv[]){
           }
 
           else if(sendBuff->opcode == LEAVE_SUCCESS || sendBuff->opcode == END_GAME){
+            if(sendBuff->opcode == END_GAME){
+
+            }
             table *node = findWithID(listTable, sockfd)->data;
             sendData(node->master, sendBuff, sizeof(Request), 0);
             sendData(node->guest, sendBuff, sizeof(Request), 0);
+            int index = findPlayMate(listTable, sockfd, client);
             listTable = leaveTable(listTable, sockfd);
+            stateClient[index] = STATE1;
             printTable(listTable);
           }
-          else if(sendBuff->opcode == PLAY_SUCCESS){
-            display(sendBuff->board);
+
+          else if(sendBuff->opcode == MOVE_SUCCESS || sendBuff->opcode == PLAY_SUCCESS){
+            table *node = findWithID(listTable, sockfd)->data;
+
+            if(node->current == BLACK){
+              sendBuff->turn = 1;
+              sendData(node->master, sendBuff, sizeof(Request), 0);
+              sendBuff->turn = 0;
+              sendData(node->guest, sendBuff, sizeof(Request), 0);
+
+            }else if(node->current = WHITE){
+              sendBuff->turn = 1;
+              sendData(node->guest, sendBuff, sizeof(Request), 0);
+              sendBuff->turn = 0;
+              sendData(node->master, sendBuff, sizeof(Request), 0);
+            }
+
             printTable(listTable);
-            ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
           }
           else {
             printTable(listTable);
@@ -190,7 +258,7 @@ int main(int argc, char *argv[]){
             int type = Player(listTable, sockfd); 
             printf("TYPE : %d\n", type);
             table *node = (table *)findWithID(listTable, sockfd)->data;
-            printf("Master: %d - Guest: %d\n",node->master,node->guest);
+            printf("Master: %d - Guest: %d - Turn : %d\n",node->master,node->guest, node->current);
             if(type == MASTER){
                 printf("Ma guest : %d\n", node->guest);
                 sendData(node->guest, sendBuff, sizeof(Request), 0);

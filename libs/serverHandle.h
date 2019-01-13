@@ -34,7 +34,8 @@ account *find_User_Pass(GSList *list, Request *request);
 account *find_User(GSList *list, Request *request);
 
 int Register(GSList *listUser, Request *request);
+int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]);
 
-Request *handleRequest(Request *request, GSList *listUser);
-Request *groupClient(Request *request, GSList *listTable, int client);
-Request *playGame(Request *request, GSList *listTable, int client);
+Request *handleRequest(int state, Request *request, GSList *listUser, char user[50]);
+Request *groupClient(int state, Request *request, GSList *listTable, int client);
+Request *playGame(int state, Request *request, GSList *listTable, int client);
