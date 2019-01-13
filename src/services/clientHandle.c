@@ -17,7 +17,6 @@ Request *clientHandle()
     scanf("%s", input);
     select = atoi(input);
   } while(select < LOGIN || select > MOVE);
-  printf("OPCODE cua client : %d\n",select);
   switch(select){
 
     case LOGIN: //1
@@ -49,21 +48,13 @@ Request *clientHandle()
     case JOIN: //5
       break;
 
-    case CHECK://6
+    case LEAVE://6
       break;
 
-    case CHAT: //7
-      printf("CHAT\nMessage: ");
-      scanf("%s",request->message);
+    case PLAY://7
       break;
 
-    case LEAVE://8
-      break;
-
-    case PLAY://9
-      break;
-
-    case MOVE://10
+    case MOVE://8
 
       printf("MOVE\nDOC  :");
       scanf("%d",&request->doc);
@@ -90,7 +81,7 @@ Request *clientHandle()
 }
 
 int renderMessage(Request *request) {
-  printf("\n-------------------\nMessage -> ");
+  printf("\n[Reply from server]-> ");
   switch(request->opcode){
 
     case LOGIN_SUCCESS:
@@ -103,10 +94,20 @@ int renderMessage(Request *request) {
 
     case PLAY_SUCCESS:
       display(request->board);
+      if(request->turn == 0){
+        printf("Waitting ...\n");
+        return 1;
+      }
+
+        
       break;
 
     case MOVE_SUCCESS:
       display(request->board);
+      if(request->turn == 0){
+        printf("Waitting ...\n");
+        return 1;
+      }
       printf("%s\n", request->message);
       break;
 
@@ -116,7 +117,7 @@ int renderMessage(Request *request) {
       break;
 
     case CREATE_SUCCESS:
-      printf("TB: %s\n", request->message);
+      printf("%s\n", request->message);
       return 1;
 
     default:

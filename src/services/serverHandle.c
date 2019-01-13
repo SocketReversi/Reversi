@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/select.h>
+
 #include "../../libs/request.h"
 #include "../../libs/account.h"
 #include "../../libs/file.h"
@@ -9,11 +11,12 @@
 #include "../../libs/reversi.h"
 
 //dung link list----------------------//
-GSList *createTable(GSList *listTable, int id){
+GSList *createTable(GSList *listTable, int id, char name[50]){
 
   table *var = malloc(sizeof(table));
 
   var->master = id;
+  strcpy(var->master_name , name); //them ten nguoi choi master
   var->guest = EMPTY;
   var->state = WAITING;
   var->result = 1;
@@ -28,7 +31,7 @@ GSList *createTable(GSList *listTable, int id){
 
 }
 
-int joinTable(GSList *listTable, int id){
+int joinTable(GSList *listTable, int id, char name[50]){
 
   GSList *var;
   var = listTable;
@@ -38,6 +41,7 @@ int joinTable(GSList *listTable, int id){
     if(node->state == WAITING){ //neu ban choi thieu nguoi
       printf("Tien hanh them nguoi choi\n");
       node->guest = id; //them khach vao ban choi
+      strcpy(node->guest_name , name); //them ten nguoi choi guest
       node->state = FULL; //cap nhat trang thai ban choi FULL
       return 1; //join thanh cong
     }
@@ -91,7 +95,7 @@ void printTable(GSList *list){
   var = list;
   printf("So ban choi online : (%d)\n",(int)g_slist_length(list));
   if(var == NULL){
-    printf("Chua co ban choi nao duoc tao!\n");
+    printf("[ Chua co ban choi nao duoc tao! ]\n");
   }
   while(var != NULL){
     table *node = var->data;
@@ -106,7 +110,7 @@ void printListUser(GSList *list){
   printf("Number account : (%d)\n",(int)g_slist_length(list));
   GSList *var;
   var = list;
-  printf("%-20s|%-20s|%-6s|%-6s|%-6s\n",
+  printf("%-20s|%-20s|%-10s|%-6s|%-6s\n",
           "Username",
           "Password",
           "Point",
@@ -115,7 +119,7 @@ void printListUser(GSList *list){
         );
   while(var != NULL){
     account *acc = var->data;
-    printf("%-20s|%-20s|   %-3d|   %-3d|   %-3d\n",
+    printf("%-20s|%-20s|%-10d|%-6d|%-6d\n",
             acc->username, 
             acc->password, 
             acc->point, 
@@ -165,6 +169,19 @@ account *find_User(GSList *list, Request *request){
   return NULL;
 }
 
+//tim node trong GSList chua thong tin yeu cau-------//
+GSList *find(GSList *listUser, char name[50]){
+  GSList *result;
+  result = listUser;
+  while(result != NULL){
+    account *user = result->data;
+    if(strcmp(user->username , name) == 0)
+      break;
+    result = result->next;
+  }
+  return result;
+}
+
 int Register(GSList *listUser, Request *request){
   account *user = createAccount(request->username,request->password, 0, 0 , 1);
   listUser = g_slist_append(listUser, user);
@@ -172,18 +189,44 @@ int Register(GSList *listUser, Request *request){
   return 1;
 }
 
-Request *handleRequest(Request *request, GSList *listUser)
+int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]){ //tim index cua ban cung ban choi--------//
+
+  int index = 0;
+  int type, id_player;
+  table *node = findWithID(listTable, id)->data; //tim ban choi chua hai nguoi
+  
+  type = Player(listTable, id);
+  if(type == MASTER)
+    id_player = node->guest;
+  else if(type == GUEST)
+    id_player = node->master;
+
+  while(1){
+    if(id_player == client[index] )
+      return index;
+    index++;
+  }
+  return -1;
+}
+
+Request *handleRequest(int state, Request *request, GSList *listUser, char user[50])
 {
   Request *sendRequest = malloc(sizeof(Request));
 
   switch (request->opcode)
   {
     case LOGIN:
+      if(state != UNKNOWN){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
       if(find_User_Pass(listUser, request) != NULL){
         if(find_User_Pass(listUser, request)->state == 0){
           find_User_Pass(listUser, request)->state = 1; //trang thai da dang nhap thanh cong
           sendRequest->opcode = LOGIN_SUCCESS;
           strcpy(sendRequest->message,"Succerss! Dang nhap thanh cong! Xin chao");
+          strcpy(sendRequest->username,request->username);
         }
         else{
           sendRequest->opcode = LOGIN_FAIL;
@@ -194,15 +237,42 @@ Request *handleRequest(Request *request, GSList *listUser)
         sendRequest->opcode = LOGIN_FAIL;
         strcpy(sendRequest->message,"Fail! Tai khoan hoac mat khau khong dung!");
       }
-      printListUser(listUser);
+      //printListUser(listUser);
+      break;
+
+    case REGISTER:
+      if(state != UNKNOWN){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
+      if(find_User(listUser, request) == NULL){
+        Register(listUser,request);
+        sendRequest->opcode = REGISTER_SUCCESS;
+        strcpy(sendRequest->message,"Success! Dang ki thanh cong!");
+      }else{
+        sendRequest->opcode = REGISTER_FAIL;
+        strcpy(sendRequest->message,"Fail! Dang ki that bai!");
+      }
+      //printListUser(listUser);
       break;
 
     case LOGOUT:
+      if(state != STATE1){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
       if(find_User(listUser, request) != NULL){
         if(find_User(listUser, request)->state == 1){
-          find_User(listUser, request)->state = 0;
-          sendRequest->opcode = LOGOUT_SUCCESS;
-          strcpy(sendRequest->message,"Success! Tai khoan da dang xuat! Goodbye ");
+          if(strcmp(request->username, user) == 0){
+            find_User(listUser, request)->state = 0;
+            sendRequest->opcode = LOGOUT_SUCCESS;
+            strcpy(sendRequest->message,"Success! Tai khoan da dang xuat! Goodbye ");
+          }else{
+            sendRequest->opcode = LOGOUT_FAIL;
+            strcpy(sendRequest->message,"Fail!Sai tai khoan dang xuat!");
+          }
         }else{
           sendRequest->opcode = LOGOUT_FAIL;
           strcpy(sendRequest->message,"Fail!Tai khoan chua dang nhap!");
@@ -212,19 +282,7 @@ Request *handleRequest(Request *request, GSList *listUser)
         sendRequest->opcode = LOGOUT_FAIL;
         strcpy(sendRequest->message,"Fail!Dang xuat that bai!"); 
       }
-      printListUser(listUser);
-      break;
-
-    case REGISTER:
-      if(find_User(listUser, request) == NULL){
-        Register(listUser,request);
-        sendRequest->opcode = REGISTER_SUCCESS;
-        strcpy(sendRequest->message,"Success! Dang ki thanh cong!");
-      }else{
-        sendRequest->opcode = REGISTER_FAIL;
-        strcpy(sendRequest->message,"Fail! Dang ki that bai!");
-      }
-      printListUser(listUser);
+      //printListUser(listUser);
       break;
 
     default:
@@ -235,29 +293,47 @@ Request *handleRequest(Request *request, GSList *listUser)
 }
 
 
-Request *groupClient(Request *request, GSList *listTable, int client){
+Request *groupClient(int state, Request *request, GSList *listTable, int client, char user[50]){
 
   Request *sendRequest = malloc(sizeof(Request));
 
   switch(request->opcode){
 
     case CREATE:
+        if(state != STATE1){
+          sendRequest->opcode = REQUEST_FAIL;
+          strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+          break;
+        }
         sendRequest->opcode = CREATE_SUCCESS;
         strcpy(sendRequest->message,"Success! Tao phong thanh cong!");
       break;
 
     case JOIN:
-      if(joinTable(listTable, client) == 0){
+
+      if(state != STATE1){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
+
+      if(joinTable(listTable, client, user) == 0){
         sendRequest->opcode = JOIN_FAIL;
         strcpy(sendRequest->message,"Fail! Khong tim thay ban choi!");
       }else{
         sendRequest->opcode = JOIN_SUCCESS;
         strcpy(sendRequest->message,"Success! Da co nguoi tham gia ban choi!");
       }
-      //printTable(table);
+
       break;
 
     case LEAVE:
+      if(state != STATE2 && state != STATE3 && state != STATE4 ){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
+
       if(findWithID(listTable, client) != NULL){ //tim thay nguoi choi trong ban
         sendRequest->opcode = LEAVE_SUCCESS;
         strcpy(sendRequest->message,"Nguoi choi da roi ban!Ban choi da huy!");
@@ -267,19 +343,6 @@ Request *groupClient(Request *request, GSList *listTable, int client){
       }
       break;
 
-    case CHECK:
-      sendRequest->opcode = CHECK;
-      if(Player(listTable, client) == MASTER)
-        strcpy(sendRequest->message,"Ban la Master\n");
-      if(Player(listTable, client) == GUEST)
-        strcpy(sendRequest->message,"Ban la Guest\n");
-      break;
-
-    case CHAT:
-      sendRequest->opcode = CHAT;
-      strcpy(sendRequest->message,request->message);
-      break;   
-
     default:
       return NULL;
   }
@@ -287,7 +350,7 @@ Request *groupClient(Request *request, GSList *listTable, int client){
   return sendRequest;
 }
 
-Request *playGame(Request *request, GSList *listTable, int client){
+Request *playGame(int state, Request *request, GSList *listTable, int client){
 
   Request *sendRequest = malloc(sizeof(Request));
   value message; //tao bien luu trang thai ban co
@@ -297,6 +360,12 @@ Request *playGame(Request *request, GSList *listTable, int client){
   switch(request->opcode){
 
     case PLAY:
+
+      if(state != STATE2){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
 
       if(findWithID(listTable, client) != NULL){
         sendRequest->opcode = PLAY_SUCCESS;
@@ -310,7 +379,11 @@ Request *playGame(Request *request, GSList *listTable, int client){
       break;
 
     case MOVE:
-
+      if(state != STATE2 && state != STATE3 ){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Fail! Thao tac khong hop le!");
+        break;
+      }
       var = findWithID(listTable, client);
       node = var->data;
 
@@ -326,6 +399,7 @@ Request *playGame(Request *request, GSList *listTable, int client){
           //copy co pho de gui cho client 
           copyBoard(sendRequest->board, node->board);
 
+          //HIEN THI BAN CO --------------------------//
           display(sendRequest->board);
 
           node->result = message.state;
@@ -334,16 +408,16 @@ Request *playGame(Request *request, GSList *listTable, int client){
           if(node->result == -1){//game the end
             sendRequest->opcode = END_GAME;
             if(winner(sendRequest->board) == BLACK)
-              strcpy(sendRequest->message,"Winner : x ! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"WINNER : x ! Tran dau ket thuc!\n");
             else if(winner(sendRequest->board) == WHITE)
-              strcpy(sendRequest->message,"Winner : o ! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"WINNER : o ! Tran dau ket thuc!\n");
             else if(winner(sendRequest->board) == NONE)
-              strcpy(sendRequest->message,"Game draw! Tran dau ket thuc!\n");
+              strcpy(sendRequest->message,"GAME DRAW! Tran dau ket thuc!\n");
           }
 
           else if(node->result == 0 ){
             sendRequest->opcode = MOVE_FAIL;
-            strcpy(sendRequest->message,"Nuoc co FAIL!");
+            strcpy(sendRequest->message,"Nuoc co khong hop le!");
           }else{
             sendRequest->opcode = MOVE_SUCCESS;
             strcpy(sendRequest->message,"Luot cua ban!");

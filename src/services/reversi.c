@@ -16,31 +16,73 @@ void initialize (int board[SIZE][SIZE]) {
 	board[SIZE/2][SIZE/2]     = WHITE;
 }
 
-//Hien thi ban co-------------------------------//
+
 void display (int board[SIZE][SIZE]) {
+	
+	
 	int i, j;
+	
 	printf("\n ");
-	for ( i=0; i < SIZE; i++ ) printf(" %d", i);
+	for ( i=0; i < SIZE; i++ ) printf("%4d", i);
 	printf("\n");
+	
+	printf("  ┌");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---┬"); }
+	printf("---┐\n");
+	
 	for ( i=0; i < SIZE; i++ ) {
-		printf("%d", i);
+		printf("%2d|", i);
 		for ( j=0; j < SIZE; j++ ) {
 			switch ( board[j][i] ) {
-				case BLACK: printf(" x");
+				case BLACK: printf(" ○ ");
 				            break;
-				case WHITE: printf(" o");
+				case WHITE: printf(" ● ");
 				            break;
-				case NONE:	printf(" -");
-							break;
-				default: 
-					board[j][i] = NONE;
-					printf(" +");
-				    break;
+				case NONE : printf("　 ");
+				            break;
 			}
+			printf("|");
 		}
 		printf("\n");
+		if ( i < SIZE-1 ) {
+			printf("  ├");
+			for ( j=0; j < SIZE-1; j++ ) {
+				printf("---+");
+			}
+			printf("---┤\n");
+		}
 	}
+
+	printf("  └");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---┴"); }
+	printf("---┘\n");
 }
+
+//Hien thi ban co-------------------------------//
+// void display (int board[SIZE][SIZE]) {
+// 	int i, j;
+// 	printf("\n ");
+// 	for ( i=0; i < SIZE; i++ ) printf(" %d", i);
+// 	printf("\n");
+// 	for ( i=0; i < SIZE; i++ ) {
+// 		printf("%d", i);
+// 		for ( j=0; j < SIZE; j++ ) {
+// 			switch ( board[j][i] ) {
+// 				case BLACK: printf(" ○");
+// 				            break;
+// 				case WHITE: printf(" ●");
+// 				            break;
+// 				case NONE:	printf(" -");
+// 							break;
+// 				default: 
+// 					board[j][i] = NONE;
+// 					printf(" +");
+// 				    break;
+// 			}
+// 		}
+// 		printf("\n");
+// 	}
+// }
 
 
 //Kiem tra co the dao nguoc duoc quan co--------------//

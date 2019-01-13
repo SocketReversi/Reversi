@@ -7,18 +7,25 @@ typedef enum {
   LOGOUT,
   CREATE,
   JOIN,
-  CHECK,
-  CHAT,
   LEAVE,
   PLAY,
   MOVE,
 } CLIENT_REQUEST;
 
+typedef enum {
+  UNKNOWN = 20,
+  STATE1,
+  STATE2,
+  STATE3,
+  STATE4,
+
+} SERVER_STATE;
+
 /**
- ** Server response opcode
+ ** Succcess opcode
  **/
 typedef enum {
-  LOGIN_SUCCESS = 20,
+  LOGIN_SUCCESS = 30,
   REGISTER_SUCCESS,
   LOGOUT_SUCCESS,
   CREATE_SUCCESS,
@@ -27,7 +34,7 @@ typedef enum {
   PLAY_SUCCESS,
   MOVE_SUCCESS,
   END_GAME,
-} SERVER_RESPONSE;
+} SUCCESS;
 
 /**
  ** Error opcode
@@ -41,6 +48,7 @@ typedef enum {
   LEAVE_FAIL,
   PLAY_FAIL,
   MOVE_FAIL,
+  REQUEST_FAIL
 } ERROR;
 
 // Request struct
