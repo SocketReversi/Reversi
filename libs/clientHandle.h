@@ -3,4 +3,4 @@
 #define WAIT 112
 
 Request *clientHandle();
-void renderMessage(Request *request);
+int renderMessage(Request *request);

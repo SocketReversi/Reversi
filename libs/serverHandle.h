@@ -7,8 +7,8 @@
 #define MASTER 111
 #define GUEST  112
 
-typedef struct tableGame {
-	int id;     //id ban co
+typedef struct ttable{
+
 	int master; //chu
 	int guest;	//khach
 	int state;	//trang thai ban co
@@ -17,20 +17,24 @@ typedef struct tableGame {
 	int turn; //luot di cua nguoi choi
 	int result; //ket qua tran co
 	int current; //trang thai hien tai cua mau quan co
-} tableGame;
+}table;
 
-void createTableList(tableGame table[MAX_TABLE]);
-int createTable(int IDmaster,tableGame table[MAX_TABLE]);
-int joinTable(int IDguest, tableGame table[MAX_TABLE]);
-int findIDgamer(int IDgamer,tableGame table[MAX_TABLE]);
-int leaveTable(int IDgamer, tableGame table[MAX_TABLE]);
-int findID(int id, tableGame table[MAX_TABLE]);
-void printTable(tableGame table[MAX_TABLE]);
+GSList *createTable(GSList *listTable, int id);
+int joinTable(GSList *listTable, int id);
+int Player(GSList *listTable, int id);
 
+GSList *findWithID(GSList *listTable, int id);
+
+GSList *leaveTable(GSList *listTable, int id);
+void printTable(GSList *list);
 void printListUser(GSList *list);
 void copyBoard(int board1[8][8], int board2[8][8]);
+
 account *find_User_Pass(GSList *list, Request *request);
 account *find_User(GSList *list, Request *request);
+
+int Register(GSList *listUser, Request *request);
+
 Request *handleRequest(Request *request, GSList *listUser);
-Request *groupClient(Request *request, tableGame table[MAX_TABLE], int client);
-Request *playGame(Request *request, tableGame table[MAX_TABLE], int client);
+Request *groupClient(Request *request, GSList *listTable, int client);
+Request *playGame(Request *request, GSList *listTable, int client);

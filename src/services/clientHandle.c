@@ -8,13 +8,16 @@
 Request *clientHandle()
 {
   int select; 
+  char input[10];
   Request *request = malloc(sizeof(Request));
 
   do {
-    printf("\n\n");
+    printf("\n");
     printf("Opcode: ");
-    scanf("%d", &select);
+    scanf("%s", input);
+    select = atoi(input);
   } while(select < LOGIN || select > MOVE);
+  printf("OPCODE cua client : %d\n",select);
   switch(select){
 
     case LOGIN: //1
@@ -46,13 +49,21 @@ Request *clientHandle()
     case JOIN: //5
       break;
 
-    case LEAVE://6
+    case CHECK://6
       break;
 
-    case PLAY://7
+    case CHAT: //7
+      printf("CHAT\nMessage: ");
+      scanf("%s",request->message);
       break;
 
-    case MOVE://8
+    case LEAVE://8
+      break;
+
+    case PLAY://9
+      break;
+
+    case MOVE://10
 
       printf("MOVE\nDOC  :");
       scanf("%d",&request->doc);
@@ -78,8 +89,8 @@ Request *clientHandle()
   return request;
 }
 
-void renderMessage(Request *request) {
-  printf("\n-----------------------------\nMessage:!\n");
+int renderMessage(Request *request) {
+  printf("\n-------------------\nMessage -> ");
   switch(request->opcode){
 
     case LOGIN_SUCCESS:
@@ -104,8 +115,14 @@ void renderMessage(Request *request) {
       printf("%s\n", request->message);
       break;
 
+    case CREATE_SUCCESS:
+      printf("TB: %s\n", request->message);
+      return 1;
+
     default:
       printf("%s\n", request->message);
       break;
   }
+
+  return 0; //khong co yeu cau doi them
 }

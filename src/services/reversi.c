@@ -19,7 +19,7 @@ void initialize (int board[SIZE][SIZE]) {
 //Hien thi ban co-------------------------------//
 void display (int board[SIZE][SIZE]) {
 	int i, j;
-	printf(" ");
+	printf("\n ");
 	for ( i=0; i < SIZE; i++ ) printf(" %d", i);
 	printf("\n");
 	for ( i=0; i < SIZE; i++ ) {
@@ -30,8 +30,12 @@ void display (int board[SIZE][SIZE]) {
 				            break;
 				case WHITE: printf(" o");
 				            break;
-				default: printf(" -");
-				            break;
+				case NONE:	printf(" -");
+							break;
+				default: 
+					board[j][i] = NONE;
+					printf(" +");
+				    break;
 			}
 		}
 		printf("\n");
@@ -112,7 +116,6 @@ int isReversible ( const int m, const int n,int board[SIZE][SIZE],int current ) 
 
 //Thuc hien dao nguoc quan co--------------------//
 value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
-	
 	int i, j;
 	int reversed = 0;
 	value message; //luu tru gia tri tra ve cho ham
@@ -220,6 +223,7 @@ value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
 			if ( isReversible(i, j, board,current) ) {
 				message.state = reversed;
 				message.color = current;
+
 				return message;
 			}
 		}
@@ -227,6 +231,7 @@ value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
 	
 	message.state = -1;
 	message.color = current;
+
 	return message;
 }
 
@@ -289,6 +294,7 @@ int play(int board[SIZE][SIZE]){
 		}
 
 	}
+	printf("Result: %d\n",result);
 	display(board);
 	printf("\nresult: ");
 	switch ( winner(board) ) {

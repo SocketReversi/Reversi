@@ -4,6 +4,7 @@
 #include "../../libs/request.h"
 #include "../../libs/account.h"
 #include "../../libs/file.h"
+#include "../../libs/reversi.h"
 #include "../../libs/serverHandle.h"
 
 FILE *open(char *filename, char *action) {

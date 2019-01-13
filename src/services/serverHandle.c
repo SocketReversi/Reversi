@@ -8,76 +8,95 @@
 #include "../../libs/serverHandle.h"
 #include "../../libs/reversi.h"
 
-void createTableList(tableGame table[MAX_TABLE]){
-  for(int i=0;i<MAX_TABLE;i++){
-    table[i].state = EMPTY;
-    table[i].master = EMPTY;
-    table[i].guest = EMPTY;
-    table[i].id = i;   
-    table[i].result = 1;
-    table[i].current = BLACK; 
-  }
+//dung link list----------------------//
+GSList *createTable(GSList *listTable, int id){
+
+  table *var = malloc(sizeof(table));
+
+  var->master = id;
+  var->guest = EMPTY;
+  var->state = WAITING;
+  var->result = 1;
+  var->current = BLACK;
+  initialize(var->board);
+  var->turn = var->master;
+
+  //them ban choi vao danh sach chay---//
+  listTable = g_slist_append(listTable, var);
+
+  return listTable;
+
 }
 
-int createTable(int IDmaster,tableGame table[MAX_TABLE]){
-  for(int i=0;i<MAX_TABLE;i++){
-    if(table[i].state == EMPTY){
+int joinTable(GSList *listTable, int id){
 
-      table[i].master = IDmaster;
-      table[i].state  = WAITING;
-      initialize(table[i].board); //khoi tao ban co
-      table[i].turn = table[i].master;
+  GSList *var;
+  var = listTable;
+  while(var != NULL){
 
-      return 1; //tao thanh cong 1 ban choi moi
+    table *node = var->data;
+    if(node->state == WAITING){ //neu ban choi thieu nguoi
+      printf("Tien hanh them nguoi choi\n");
+      node->guest = id; //them khach vao ban choi
+      node->state = FULL; //cap nhat trang thai ban choi FULL
+      return 1; //join thanh cong
     }
+    var = var->next;
   }
-  return 0; //khong tao duoc ban choi
+  return 0; //khong co ban choi nao trong
 }
 
-int joinTable(int IDguest, tableGame table[MAX_TABLE]){
-  for(int i=0 ; i<MAX_TABLE ; i++){
-    if(table[i].state == WAITING){
-      table[i].guest = IDguest;
-      table[i].state = FULL;
-      return 1; //tham gia ban choi thanh cong
+//xac dinh loai nguoi choi la Master hay Guest--//
+int Player(GSList *listTable, int id){
+  GSList *var = listTable;
+  table *node;
+  while(var != NULL){
+    node = var->data;
+    if(id == node->master)
+      return MASTER;
+    if(id == node->guest)
+      return GUEST;
+    var = var->next;
+  }
+  return 0;
+}
+
+//tim theo ID dung link list
+GSList *findWithID(GSList *listTable, int id){
+
+  GSList *var;
+  var = listTable;
+  while(var != NULL){
+
+    table *node = var->data;
+    if(id == node->master || id == node->guest){ //neu tim thay nguoi choi
+      return var; //tim thay nguoi choi - tra ve ban choi do
     }
+    var = var->next;
   }
-  return 0; //khong tham gia duoc ban choi nao
+  return NULL; //khong tim thay nguoi choi
 }
 
-int findIDgamer(int IDgamer,tableGame table[MAX_TABLE]){
-  for(int i=0; i<MAX_TABLE ; i++){
-    if(IDgamer == table[i].master)
-      return table[i].id;
-    else if(IDgamer == table[i].guest){
-      return (MAX_TABLE + table[i].id);
-    }
+GSList *leaveTable(GSList *listTable, int id){
+  GSList *find = findWithID(listTable, id);
+  if(find != NULL ){
+    listTable = g_slist_remove_link(listTable, find); //xoa ban choi
+    return listTable; //xoa ban choi
   }
-  return EMPTY;
+  return NULL;
 }
 
-int findID(int id, tableGame table[MAX_TABLE]){
-  for(int i=0; i<MAX_TABLE ; i++){
-    if(id == table[i].master || id == table[i].guest)
-      return table[i].id;
+void printTable(GSList *list){
+  GSList *var;
+  var = list;
+  printf("So ban choi online : (%d)\n",(int)g_slist_length(list));
+  if(var == NULL){
+    printf("Chua co ban choi nao duoc tao!\n");
   }
-  return EMPTY;
-}
-
-int leaveTable(int IDgamer, tableGame table[MAX_TABLE]){
-  int find = findID(IDgamer,table);
-  if(find != EMPTY ){
-    table[find].master = EMPTY;
-    table[find].guest  = EMPTY;
-    table[find].state  = EMPTY;
-    return find;
-  }
-  return EMPTY;
-}
-
-void printTable(tableGame table[MAX_TABLE]){
-  for(int i=0 ; i<MAX_TABLE ; i++){
-    printf("IDTable:%d\nState:%d\nMaster:%d\nGuest:%d\n\n",table[i].id,table[i].state,table[i].master,table[i].guest);
+  while(var != NULL){
+    table *node = var->data;
+    printf("State:%d\nMaster:%d\nGuest:%d\n\n",node->state,node->master,node->guest);
+    var = var->next;
   }
 }
 
@@ -146,10 +165,16 @@ account *find_User(GSList *list, Request *request){
   return NULL;
 }
 
+int Register(GSList *listUser, Request *request){
+  account *user = createAccount(request->username,request->password, 0, 0 , 1);
+  listUser = g_slist_append(listUser, user);
+  updateData(listUser);
+  return 1;
+}
+
 Request *handleRequest(Request *request, GSList *listUser)
 {
   Request *sendRequest = malloc(sizeof(Request));
-  memset(request->message, '\0', 50);
 
   switch (request->opcode)
   {
@@ -192,9 +217,7 @@ Request *handleRequest(Request *request, GSList *listUser)
 
     case REGISTER:
       if(find_User(listUser, request) == NULL){
-        account *user = createAccount(request->username,request->password, 0, 0 , 1);
-        listUser = g_slist_append(listUser, user);
-        updateData(listUser);
+        Register(listUser,request);
         sendRequest->opcode = REGISTER_SUCCESS;
         strcpy(sendRequest->message,"Success! Dang ki thanh cong!");
       }else{
@@ -207,42 +230,35 @@ Request *handleRequest(Request *request, GSList *listUser)
     default:
       return NULL;
   }
-
+  memset(request->message, '\0', 50);
   return sendRequest;
 }
 
 
-Request *groupClient(Request *request, tableGame table[MAX_TABLE], int client){
+Request *groupClient(Request *request, GSList *listTable, int client){
 
   Request *sendRequest = malloc(sizeof(Request));
-  memset(request->message, '\0', 50);
 
   switch(request->opcode){
 
     case CREATE:
-      if(createTable(client, table) == 0){
-        sendRequest->opcode = CREATE_FAIL;
-        strcpy(sendRequest->message,"Fail!Tao phong that bai!");
-      }else{
         sendRequest->opcode = CREATE_SUCCESS;
         strcpy(sendRequest->message,"Success! Tao phong thanh cong!");
-      }
-      printTable(table);
       break;
 
     case JOIN:
-      if(joinTable(client,table) == 0){
+      if(joinTable(listTable, client) == 0){
         sendRequest->opcode = JOIN_FAIL;
-        strcpy(sendRequest->message,"Fail! Cac ban choi da day!");
+        strcpy(sendRequest->message,"Fail! Khong tim thay ban choi!");
       }else{
         sendRequest->opcode = JOIN_SUCCESS;
-        strcpy(sendRequest->message,"Success! Tham gia thanh cong!");
+        strcpy(sendRequest->message,"Success! Da co nguoi tham gia ban choi!");
       }
-      printTable(table);
+      //printTable(table);
       break;
 
     case LEAVE:
-      if(findID(client , table) != EMPTY){ //tim thay nguoi choi trong ban
+      if(findWithID(listTable, client) != NULL){ //tim thay nguoi choi trong ban
         sendRequest->opcode = LEAVE_SUCCESS;
         strcpy(sendRequest->message,"Nguoi choi da roi ban!Ban choi da huy!");
       }else{
@@ -251,23 +267,38 @@ Request *groupClient(Request *request, tableGame table[MAX_TABLE], int client){
       }
       break;
 
+    case CHECK:
+      sendRequest->opcode = CHECK;
+      if(Player(listTable, client) == MASTER)
+        strcpy(sendRequest->message,"Ban la Master\n");
+      if(Player(listTable, client) == GUEST)
+        strcpy(sendRequest->message,"Ban la Guest\n");
+      break;
+
+    case CHAT:
+      sendRequest->opcode = CHAT;
+      strcpy(sendRequest->message,request->message);
+      break;   
+
     default:
       return NULL;
   }
-
+  memset(request->message, '\0', 50);
   return sendRequest;
 }
 
-Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
+Request *playGame(Request *request, GSList *listTable, int client){
 
   Request *sendRequest = malloc(sizeof(Request));
-  memset(request->message, '\0', 50);
+  value message; //tao bien luu trang thai ban co
+  table *node;
+  GSList *var;
 
   switch(request->opcode){
 
     case PLAY:
 
-      if(findID(client, table) != EMPTY){
+      if(findWithID(listTable, client) != NULL){
         sendRequest->opcode = PLAY_SUCCESS;
         initialize(sendRequest->board);
         strcpy(sendRequest->message,"OK! Bat dau choi");
@@ -280,30 +311,42 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
 
     case MOVE:
 
-      if(findID(client, table)!= EMPTY){ //neu tim thay nguoi trong o trong ban choi
+      var = findWithID(listTable, client);
+      node = var->data;
 
-        if(table[findID(client, table)].result != 0){ // neu tro choi chua ket thuc
+      if(var != NULL){ //neu tim thay nguoi trong o trong ban choi
+        if(node->result > -1){ // neu tro choi chua ket thuc
 
-          value message; //tao bien luu trang thai ban co
           message = reverse(request->doc, 
                             request->ngang, 
-                            table[findID(client, table)].board,
-                            table[findID(client, table)].current
+                            node->board,
+                            node->current
                             );
 
           //copy co pho de gui cho client 
-          copyBoard(sendRequest->board, table[findID(client, table)].board);
+          copyBoard(sendRequest->board, node->board);
+
           display(sendRequest->board);
 
-          table[findID(client, table)].result = message.state;
-          table[findID(client, table)].current = message.color;
+          node->result = message.state;
+          node->current = message.color;
 
-          if(table[findID(client, table)].result == 0 ){
+          if(node->result == -1){//game the end
+            sendRequest->opcode = END_GAME;
+            if(winner(sendRequest->board) == BLACK)
+              strcpy(sendRequest->message,"Winner : x ! Tran dau ket thuc!\n");
+            else if(winner(sendRequest->board) == WHITE)
+              strcpy(sendRequest->message,"Winner : o ! Tran dau ket thuc!\n");
+            else if(winner(sendRequest->board) == NONE)
+              strcpy(sendRequest->message,"Game draw! Tran dau ket thuc!\n");
+          }
+
+          else if(node->result == 0 ){
             sendRequest->opcode = MOVE_FAIL;
-            strcpy(sendRequest->message,"Nuoc co khong hop le!");
+            strcpy(sendRequest->message,"Nuoc co FAIL!");
           }else{
             sendRequest->opcode = MOVE_SUCCESS;
-            strcpy(sendRequest->message,"OK! Nuoc co hop le!");
+            strcpy(sendRequest->message,"Luot cua ban!");
           }
         }
       }
@@ -316,6 +359,6 @@ Request *playGame(Request *request, tableGame table[MAX_TABLE], int client){
     default:
       strcpy(sendRequest->message,"Thao tac khong hop le");
   }
-
+  memset(request->message, '\0', 50);
   return sendRequest;
 }

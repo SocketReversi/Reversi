@@ -7,6 +7,8 @@ typedef enum {
   LOGOUT,
   CREATE,
   JOIN,
+  CHECK,
+  CHAT,
   LEAVE,
   PLAY,
   MOVE,
@@ -24,6 +26,7 @@ typedef enum {
   LEAVE_SUCCESS,
   PLAY_SUCCESS,
   MOVE_SUCCESS,
+  END_GAME,
 } SERVER_RESPONSE;
 
 /**

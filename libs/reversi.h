@@ -6,6 +6,7 @@
 typedef struct value{
 	int state;
 	int color;
+
 }value;
 
 //int current = BLACK;        
