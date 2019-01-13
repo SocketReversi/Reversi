@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <gtk/gtk.h>
+
 #include "../libs/account.h"
 #include "../libs/valid.h"
 #include "../libs/request.h"
