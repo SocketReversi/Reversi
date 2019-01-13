@@ -3,8 +3,9 @@ typedef struct account{
 	int point;
 	char username[30];
 	char password[30];
-  int status;
+	int state;
+    int status;
 } account;
 
-account *createAccount(char *username, char *password, int point, int status);
+account *createAccount(char *username, char *password, int point, int state, int status);
 account *accountIsExistByUsername(char *username);

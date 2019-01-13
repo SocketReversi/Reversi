@@ -9,7 +9,8 @@
 #include "../libs/account.h"
 #include "../libs/valid.h"
 #include "../libs/request.h"
-#include "../libs/client.h"
+#include "../libs/clientHandle.h"
+#include "../libs/reversi.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,27 +49,31 @@ int main(int argc, char *argv[])
 
     bytes_sent = sendData(client_sock, request, sizeof(Request), 0);
 
-    if (bytes_sent <= 0)
-    {
+    if (bytes_sent <= 0){
       perror("\nError: ");
       break;
     }
-
-    //receive echo reply
-    bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
-
-    if (bytes_received < 0)
-    {
-      perror("\nError: ");
-      break;
-    }
-    else if (bytes_received == 0)
-    {
-      printf("Connection closed.\n");
-      break;
+    else{
+      printf("\n");
     }
 
-    renderMessage(request);
+    int wait;
+    do{
+      //receive echo reply
+      bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
+      // printf("Turn in request:%d\n",request->turn);
+      if (bytes_received < 0){
+        perror("\nError: ");
+        break;
+      }
+      else if (bytes_received == 0){
+        printf("Connection closed.\n");
+        break;
+      }
+
+      wait = renderMessage(request);
+      printf("Gia tri wait: %d\n",wait);
+    }while(wait == 1);
   }
 
   //Step 4: Close socket

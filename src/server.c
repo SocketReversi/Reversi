@@ -19,18 +19,23 @@
 
 #include "../libs/account.h"
 #include "../libs/request.h"
-#include "../libs/server.h"
+#include "../libs/serverHandle.h"
 #include "../libs/valid.h"
 #include "../libs/file.h"
+#include "../libs/reversi.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
   paramsServerValid(argc);
   // Set open port
   int PORT = atoi(argv[1]);
 
+  //Init table for game
+  GSList *listTable = NULL;
+
   //Init user data
   GSList *listUser = importUserFromFileToList();
+  printListUser(listUser);
+
 
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
@@ -133,8 +138,71 @@ int main(int argc, char *argv[])
         }
         else
         {
-          sendBuff = handleRequest(rcvBuff);
-          ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+          sendBuff = groupClient(rcvBuff, listTable, sockfd);
+          
+          if(sendBuff == NULL){
+            sendBuff = handleRequest(rcvBuff,listUser);
+          }
+          if(sendBuff == NULL){
+            sendBuff = playGame(rcvBuff, listTable, sockfd);
+          }
+          printf("Ma tra ve : %d\n",sendBuff->opcode );
+          //SEND DATA TO CLIENT--------------------------//
+
+          if(   sendBuff->opcode == LOGIN_SUCCESS||
+                sendBuff->opcode == LOGIN_FAIL||
+
+                sendBuff->opcode == REGISTER_SUCCESS||
+                sendBuff->opcode == REGISTER_FAIL||
+
+                sendBuff->opcode == LOGOUT_SUCCESS||
+                sendBuff->opcode == LOGOUT_FAIL||
+                sendBuff->opcode == JOIN_FAIL||
+                sendBuff->opcode == LEAVE_FAIL||
+                
+                sendBuff->opcode == PLAY_FAIL||
+                sendBuff->opcode == MOVE_FAIL||
+                sendBuff->opcode == CHECK){
+            printTable(listTable);
+            ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+
+          }else if(sendBuff->opcode == CREATE_SUCCESS){
+            listTable = createTable(listTable, sockfd);
+            printTable(listTable);
+            ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+          }
+
+          else if(sendBuff->opcode == LEAVE_SUCCESS || sendBuff->opcode == END_GAME){
+            table *node = findWithID(listTable, sockfd)->data;
+            sendData(node->master, sendBuff, sizeof(Request), 0);
+            sendData(node->guest, sendBuff, sizeof(Request), 0);
+            listTable = leaveTable(listTable, sockfd);
+            printTable(listTable);
+          }
+          else if(sendBuff->opcode == PLAY_SUCCESS){
+            display(sendBuff->board);
+            printTable(listTable);
+            ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+          }
+          else {
+            printTable(listTable);
+            printf("%s\n",sendBuff->message );
+            int type = Player(listTable, sockfd); 
+            printf("TYPE : %d\n", type);
+            table *node = (table *)findWithID(listTable, sockfd)->data;
+            printf("Master: %d - Guest: %d\n",node->master,node->guest);
+            if(type == MASTER){
+                printf("Ma guest : %d\n", node->guest);
+                sendData(node->guest, sendBuff, sizeof(Request), 0);
+            }
+            else if(type == GUEST){
+              printf("Ma master : %d\n", node->master);
+              sendData(node->master, sendBuff, sizeof(Request), 0);
+            }else{
+              ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
+            }
+          }
+          //DONE HANDING DATA TO SEND-------------------//
 
           if (ret <= 0)
           {

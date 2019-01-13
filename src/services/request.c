@@ -28,7 +28,3 @@ int sendData(int s, Request *buff, int size, int flags)
     perror("Error: ");
   return n;
 }
-
-void renderMessage(Request *request) {
-  printf("Opcode: %d\nMessage: %s\n", request->opcode, request->message);
-}
