@@ -48,7 +48,8 @@ typedef enum {
   LEAVE_FAIL,
   PLAY_FAIL,
   MOVE_FAIL,
-  REQUEST_FAIL
+  REQUEST_FAIL,
+  PASS_WRONG
 } ERROR;
 
 // Request struct

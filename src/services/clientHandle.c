@@ -5,6 +5,21 @@
 #include "../../libs/reversi.h"
 #include "../../libs/clientHandle.h"
 
+void printHelp(){
+  printf("        [help]        \n");
+  printf("|%-10s|%-10s|\n","  Opcode","  Mean");
+  printf(" --------------------\n");
+  printf("|   %-7d|%-10s|\n",  1," LOG IN");
+  printf("|   %-7d|%-10s|\n",  2," REGISTER");
+  printf("|   %-7d|%-10s|\n",  3," LOG OUT");
+  printf("|   %-7d|%-10s|\n",  4," CREATE");
+  printf("|   %-7d|%-10s|\n",  5," JOIN");
+  printf("|   %-7d|%-10s|\n",  6," LEAVE");
+  printf("|   %-7d|%-10s|\n",  7," PLAY");
+  printf("|   %-7d|%-10s|\n",  8," MOVE");
+  printf(" --------------------\n");
+}
+
 Request *clientHandle()
 {
   int select; 
@@ -16,9 +31,17 @@ Request *clientHandle()
     printf("Opcode: ");
     scanf("%s", input);
     select = atoi(input);
-  } while(select < LOGIN || select > MOVE);
-  switch(select){
 
+    if(strcmp(input,"help") == 0){
+      printHelp();
+    }else if(select <LOGIN || select > MOVE){
+      printf("Request invalid! Input [help] for instructions!\n");
+    }
+
+  } while(select < LOGIN || select > MOVE);
+
+  switch(select){
+    char choice[10];
     case LOGIN: //1
 
       printf("LOG IN\nUsername: ");
@@ -43,34 +66,45 @@ Request *clientHandle()
       break;
 
     case CREATE://4
+      printf("CREATE\n");
+      printf("Waitting...\n");
       break;
 
     case JOIN: //5
+      printf("JOIN\n");
+      printf("Waitting...\n");
       break;
 
     case LEAVE://6
+      printf("LEAVE\n");
+      printf("Do you really want to leave the table game?\n");
+      printf(" [yes] -> Agree!        [other] -> Cancel! \n");
+      printf("Choice : ");scanf("%s",choice);
+      if(strcmp(choice,"yes") == 0){
+        select = LEAVE;
+      }else{
+        select = RESET;
+      }
       break;
 
     case PLAY://7
+      printf("PLAY\n");
       break;
 
     case MOVE://8
 
-      printf("MOVE\nDOC  :");
+      printf("MOVE\nVertical   : ");
       scanf("%d",&request->doc);
-      printf("NGANG: ");
+      printf("Horizontal : ");
       scanf("%d",&request->ngang);
       while(request->doc < 0 || request->doc >7 || request->ngang < 0 || request->ngang >7){
         
-        printf("Nuoc co khong hop le! Nhap lai\n");
-        printf("MOVE\nDOC  :");
+        printf("Input invalid! Again!\n");
+        printf("MOVE\nVertical   : ");
         scanf("%d",&request->doc);
-        printf("NGANG: ");
+        printf("Horizontal : ");
         scanf("%d",&request->ngang);
       }
-      break;
-
-    default:
       break;
 
   }
@@ -118,6 +152,7 @@ int renderMessage(Request *request) {
 
     case CREATE_SUCCESS:
       printf("%s\n", request->message);
+      printf("Wait for other player ...\n");
       return 1;
 
     default:

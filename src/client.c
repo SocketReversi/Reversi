@@ -47,7 +47,11 @@ int main(int argc, char *argv[])
   //send message
   while (1)
   {
-    Request *request = clientHandle();
+    Request *request;
+    do{
+       request = clientHandle();
+     }while(request->opcode == RESET);
+   
 
     bytes_sent = sendData(client_sock, request, sizeof(Request), 0);
 

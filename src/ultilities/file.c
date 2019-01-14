@@ -11,7 +11,7 @@ FILE *open(char *filename, char *action) {
 	FILE *file = fopen(filename, action);
 
 	if (file == NULL) {
-		printf("File Can\'t Open\n");
+		printf("File can not open\n");
 		return NULL;
 	} else {
 		return file;

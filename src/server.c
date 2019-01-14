@@ -40,6 +40,8 @@ int main(int argc, char *argv[]){
   int nready, client[FD_SETSIZE]; //so may khach toi da
   int stateClient[FD_SETSIZE]; //trang thai tuong ung voi moi tai khoan Client
   char user[FD_SETSIZE][50]; //so tai khoan tuong ung voi so may khach
+  int count[FD_SETSIZE]; //so bien dem cho cac tai khoan may khach
+
   ssize_t ret;
   fd_set readfds, allset;
   socklen_t clilen;
@@ -147,10 +149,10 @@ int main(int argc, char *argv[]){
           if(sendBuff == NULL){
             sendBuff = playGame(stateClient[i], rcvBuff, listTable, sockfd);
           }
-          printf("OPCODE HANDED : [%d]\n",sendBuff->opcode );
 
           //setting State for client---------------//
             if( sendBuff->opcode == LOGIN_FAIL||
+                sendBuff->opcode == PASS_WRONG||
                 sendBuff->opcode == REGISTER_SUCCESS||
                 sendBuff->opcode == REGISTER_FAIL||
                 sendBuff->opcode == LOGOUT_SUCCESS
@@ -193,7 +195,7 @@ int main(int argc, char *argv[]){
 
           if(   sendBuff->opcode == LOGIN_SUCCESS||
                 sendBuff->opcode == LOGIN_FAIL||
-
+                sendBuff->opcode == PASS_WRONG||
                 sendBuff->opcode == REGISTER_SUCCESS||
                 sendBuff->opcode == REGISTER_FAIL||
 
@@ -208,9 +210,18 @@ int main(int argc, char *argv[]){
                 sendBuff->opcode == REQUEST_FAIL){
 
             if(sendBuff->opcode == LOGIN_SUCCESS){
+              count[i] = 0;
               strcpy(user[i], sendBuff->username); //lay thong tin ve user dang online tuong ung voi may khach
             }
-
+            else if(sendBuff->opcode == PASS_WRONG){//neu sai mat khau
+              count[i] += 1; 
+              if(count[i] == 3){ //neu tai khoan nhap sai mat khau qua 3 lan 
+                account *acc = find(listUser, rcvBuff->username)->data;
+                acc->status = 0; //block tai khoan vi sai mat khau qua 3 lan
+                strcpy(sendBuff->message, "Password invalid 3 time! User is blocked!");
+                updateData(listUser);
+              }
+            }
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           }else if(sendBuff->opcode == CREATE_SUCCESS){
