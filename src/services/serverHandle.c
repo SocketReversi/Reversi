@@ -133,7 +133,7 @@ void printListUser(GSList *list){
 
     switch(acc->state){
       case 0:
-        strcpy(state,"off");
+        strcpy(state,"-");
         break;
       default:
         strcpy(state,"ON");
@@ -208,10 +208,10 @@ GSList *find(GSList *listUser, char name[50]){
   while(result != NULL){
     account *user = result->data;
     if(strcmp(user->username , name) == 0)
-      break;
+      return result;
     result = result->next;
   }
-  return result;
+  return NULL; // neu khong tim thay 
 }
 
 int Register(GSList *listUser, Request *request){
@@ -221,21 +221,42 @@ int Register(GSList *listUser, Request *request){
   return 1;
 }
 
+int findIDPlayMate(GSList *listTable, int idPlayer){
+  int id, type;
+  table *node = findWithID(listTable, idPlayer)->data;
+  if(node == NULL)
+    return -1;
+  type = Player(listTable, idPlayer); //xac dinh kieu nguoi choi trong ban
+  if(type != 0){
+    if(type == MASTER)
+      id = node->guest;
+    else if(type == GUEST)
+      id = node->master;
+    else
+      return -1;
+    printf("ID : %d\n",id );
+    return id; //tra ve id nguoi cung choi trong ban
+  }
+  return -1;
+}
+
 int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]){ //tim index cua ban cung ban choi--------//
 
   int index = 0;
   int type, id_player;
   table *node = findWithID(listTable, id)->data; //tim ban choi chua hai nguoi
-  
+  if(node == NULL)
+    return -1;
   type = Player(listTable, id);
   if(type == MASTER)
     id_player = node->guest;
   else if(type == GUEST)
     id_player = node->master;
-
+  else
+    return -1;
   while(1){
     if(id_player == client[index] )
-      return index;
+      return index; //vi tri index trong mang user,client,stateClient,count - ko phai id
     index++;
   }
   return -1;
@@ -373,7 +394,7 @@ Request *groupClient(int state, Request *request, GSList *listTable, int client,
       break;
 
     case LEAVE:
-      if(state != STATE2 && state != STATE3 && state != STATE4 ){
+      if(state != STATE2 && state != STATE2_2 && state != STATE3){
         sendRequest->opcode = REQUEST_FAIL;
         strcpy(sendRequest->message,"Warning! Request invalid!");
         break;
@@ -424,7 +445,7 @@ Request *playGame(int state, Request *request, GSList *listTable, int client){
       break;
 
     case MOVE:
-      if(state != STATE2 && state != STATE3 ){
+      if(state != STATE2_2 && state != STATE3 ){
         sendRequest->opcode = REQUEST_FAIL;
         strcpy(sendRequest->message,"Warning! Request invalid!");
         break;

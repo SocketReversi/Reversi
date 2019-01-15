@@ -136,8 +136,55 @@ int main(int argc, char *argv[]){
         if (ret <= 0)
         {
           FD_CLR(sockfd, &allset);
-          close(sockfd);
-          client[i] = -1;
+          if(stateClient[i] == UNKNOWN || stateClient[i] == STATE1){
+            if(stateClient[i] == STATE1){
+              account *acc = find(listUser, user[i])->data;
+              acc->state = 0;
+              stateClient[i] = UNKNOWN;
+            }
+            printf("The connect [%s] has exited\n", inet_ntoa(cliaddr.sin_addr));
+            close(sockfd);
+            client[i] = -1;
+          }
+          else{
+            int index = findPlayMate(listTable, sockfd, client);
+            int id =  findIDPlayMate(listTable, sockfd);
+
+            //chuyen trang thai offline neu nhu tai khoan da dang nhap----//
+            if(find(listUser, user[i]) != NULL){
+              account *acc = find(listUser, user[i])->data;
+              acc->state = 0;
+
+              //tru diem cua nguoi choi do vi tu ty thoat ra
+              if(id != -1){
+                if(acc->point > 100)
+                  acc->point -= POINT;
+                else
+                  acc->point = 0;
+              }
+            }
+
+            printf("Player: %d -- Other Player:%d\n",sockfd, id);
+            if(id != -1 && index != -1){//tim thay nguoi choi khac dang cung choi voi tai khoan
+              GSList *man = find(listUser, user[index]);
+              account *acc = man->data;
+              acc->point += POINT; //cong them diem POINT cho nguoi choi
+              sendBuff->opcode = LEAVE_SUCCESS;
+              strcpy(sendBuff->message,"The player has left. Canceled the table game!");
+              stateClient[index] = STATE1;
+            }
+
+            listTable = leaveTable(listTable, sockfd);
+            stateClient[i] = UNKNOWN;
+            printListUser(listUser);
+            updateData(listUser);
+            close(sockfd);
+            client[i] = -1;
+            printf("The connect [%s] has exited\n", inet_ntoa(cliaddr.sin_addr));
+            if(id != -1 && sendBuff->turn != 1)
+              sendData(id, sendBuff, sizeof(Request), 0);  
+          }
+          
         }
         else
         {
@@ -171,24 +218,25 @@ int main(int argc, char *argv[]){
 
             }else if(
                 sendBuff->opcode == CREATE_SUCCESS||
-                sendBuff->opcode == JOIN_SUCCESS||
-                sendBuff->opcode == LEAVE_FAIL
+                sendBuff->opcode == LEAVE_FAIL||
+                sendBuff->opcode == PLAY_FAIL
               ){
               stateClient[i] = STATE2;
 
-            }else if(
+            }
+            else if(sendBuff->opcode == JOIN_SUCCESS){
+              stateClient[i] = STATE2_2;
+            }
+
+            else if(
                 sendBuff->opcode == PLAY_SUCCESS||
                 sendBuff->opcode == MOVE_SUCCESS||
                 sendBuff->opcode == MOVE_FAIL
               ){
               stateClient[i] = STATE3;
 
-            }else if(
-              sendBuff->opcode == MOVE_SUCCESS
-              ){
-              stateClient[i] = STATE4;
-
             }
+
           //end setting state for client-----------//
 
           //SEND DATA TO CLIENT--------------------------//
@@ -244,19 +292,35 @@ int main(int argc, char *argv[]){
               if(result == BLACK){  //master thang
                 if(type = MASTER){
                   acc1->point += POINT;
-                  acc2->point -= POINT;
+
+                  if(acc2->point > POINT)
+                    acc2->point -= POINT;
+                  else
+                    acc2->point = 0;
 
                 }else if(type = GUEST){
-                  acc1->point -= POINT;
+                  if(acc1->point > POINT)
+                    acc1->point -= POINT;
+                  else
+                    acc1->point = 0;
+
                   acc2->point += POINT;
                 }
               }else if(result = WHITE){ //guest thang
                 if(type = GUEST){
                   acc1->point += POINT;
-                  acc2->point -= POINT;
+
+                  if(acc2->point > POINT)
+                    acc2->point -= POINT;
+                  else
+                    acc2->point = 0;
 
                 }else if(type = MASTER){
-                  acc1->point -= POINT;
+                  if(acc1->point > POINT)
+                    acc1->point -= POINT;
+                  else
+                    acc1->point = 0;
+
                   acc2->point += POINT;
                 }
               }
@@ -267,8 +331,11 @@ int main(int argc, char *argv[]){
               GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node chua thong tin nguoi 2
               account *acc1 = man1->data;
               account *acc2 = man2->data;
+              if(acc1->point > 100)
+                acc1->point -= POINT;
+              else
+                acc1->point = 0;
 
-              acc1->point -= POINT;
               acc2->point += POINT;
 
               //nguoi nao tu y thoat ra se bi tru 100 diem, nguoi con lai duoc cong 100 diem

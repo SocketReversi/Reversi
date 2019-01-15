@@ -6,9 +6,9 @@
 #include "../../libs/clientHandle.h"
 
 void printHelp(){
-  printf("        [help]        \n");
-  printf("|%-10s|%-10s|\n","  Opcode","  Mean");
   printf(" --------------------\n");
+  printf("|%-10s|%-10s|\n","  Opcode","  Mean");
+  printf("\n --------------------\n");
   printf("|   %-7d|%-10s|\n",  1," LOG IN");
   printf("|   %-7d|%-10s|\n",  2," REGISTER");
   printf("|   %-7d|%-10s|\n",  3," LOG OUT");

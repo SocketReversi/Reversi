@@ -39,6 +39,7 @@ account *find_User(GSList *list, Request *request);
 GSList *find(GSList *listUser, char name[50]);
 
 int Register(GSList *listUser, Request *request);
+int findIDPlayMate(GSList *listTable, int idPlayer);
 int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]);
 
 Request *handleRequest(int state, Request *request, GSList *listUser, char user[50]);

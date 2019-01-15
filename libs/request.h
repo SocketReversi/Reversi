@@ -16,8 +16,8 @@ typedef enum {
   UNKNOWN = 20,
   STATE1,
   STATE2,
-  STATE3,
-  STATE4,
+  STATE2_2,
+  STATE3
 
 } SERVER_STATE;
 

@@ -26,9 +26,9 @@ void display (int board[SIZE][SIZE]) {
 	for ( i=0; i < SIZE; i++ ) printf("%4d", i);
 	printf("\n");
 	
-	printf("  ┌");
-	for ( i=0; i < SIZE-1; i++ ) { printf("---┬"); }
-	printf("---┐\n");
+	printf("  +");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---+"); }
+	printf("---+\n");
 	
 	for ( i=0; i < SIZE; i++ ) {
 		printf("%2d|", i);
@@ -45,17 +45,17 @@ void display (int board[SIZE][SIZE]) {
 		}
 		printf("\n");
 		if ( i < SIZE-1 ) {
-			printf("  ├");
+			printf("  +");
 			for ( j=0; j < SIZE-1; j++ ) {
 				printf("---+");
 			}
-			printf("---┤\n");
+			printf("---+\n");
 		}
 	}
 
-	printf("  └");
-	for ( i=0; i < SIZE-1; i++ ) { printf("---┴"); }
-	printf("---┘\n");
+	printf("  +");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---+"); }
+	printf("---+\n");
 }
 
 //Kiem tra co the dao nguoc duoc quan co--------------//

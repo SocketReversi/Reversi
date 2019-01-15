@@ -66,20 +66,27 @@ int main(int argc, char *argv[])
     int wait;
     do{
       //receive echo reply
-      bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
+        bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
 
       if (bytes_received < 0){
-        perror("\nError: ");
         break;
       }
       else if (bytes_received == 0){
-        printf("Connection closed.\n");
         break;
       }
 
       wait = renderMessage(request);
-
+      
     }while(wait == 1);
+
+    if (bytes_received < 0){
+      perror("\nError: ");
+      break;
+    }
+    else if (bytes_received == 0){
+      printf("Connection closed.\n");
+      break;
+    }
   }
 
   //Step 4: Close socket
