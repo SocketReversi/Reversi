@@ -352,6 +352,16 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
       //printListUser(listUser);
       break;
 
+    case RANK:
+
+      //xu ly yeu cau muon xem Rank cua client
+      /* code here*/
+
+      //tra ve opcode va thong diep cho client
+      /* code here*/
+      
+      break;
+
     default:
       return NULL;
   }

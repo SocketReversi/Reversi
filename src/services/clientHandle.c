@@ -65,17 +65,21 @@ Request *clientHandle()
       scanf("%s",request->password);
       break;
 
-    case CREATE://4
+    case RANK://4
+      printf("RANK\n");
+      break;
+
+    case CREATE://5
       printf("CREATE\n");
       printf("Waitting...\n");
       break;
 
-    case JOIN: //5
+    case JOIN: //6
       printf("JOIN\n");
       printf("Waitting...\n");
       break;
 
-    case LEAVE://6
+    case LEAVE://7
       printf("LEAVE\n");
       printf("Do you really want to leave the table game?\n");
       printf(" [yes] -> Agree!        [other] -> Cancel! \n");
@@ -87,11 +91,11 @@ Request *clientHandle()
       }
       break;
 
-    case PLAY://7
+    case PLAY://8
       printf("PLAY\n");
       break;
 
-    case MOVE://8
+    case MOVE://9
 
       printf("MOVE\nVertical   : ");
       scanf("%d",&request->doc);

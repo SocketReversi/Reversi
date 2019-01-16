@@ -5,6 +5,7 @@ typedef enum {
   LOGIN = 1,
   REGISTER,
   LOGOUT,
+  RANK,
   CREATE,
   JOIN,
   LEAVE,

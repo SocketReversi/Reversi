@@ -27,7 +27,7 @@ libs = $(services) $(ultilities) $(validations)
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): src/$(SERVER).o $(libs)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK) $(EXP)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
 $(CLIENT): src/$(CLIENT).o $(libs) 
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK) $(EXP)
