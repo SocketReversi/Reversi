@@ -11,7 +11,7 @@ FILE *open(char *filename, char *action) {
 	FILE *file = fopen(filename, action);
 
 	if (file == NULL) {
-		printf("File Can\'t Open\n");
+		printf("File can not open\n");
 		return NULL;
 	} else {
 		return file;
@@ -28,7 +28,7 @@ GSList *importUserFromFileToList() {
   }
 
   char username[30], password[30];
-  int id, point, status;
+  int point, status;
 
   while(1) {
     fscanf(file, "%s %s %d %d", username, password, &point, &status);

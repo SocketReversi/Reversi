@@ -40,6 +40,8 @@ int main(int argc, char *argv[]){
   int nready, client[FD_SETSIZE]; //so may khach toi da
   int stateClient[FD_SETSIZE]; //trang thai tuong ung voi moi tai khoan Client
   char user[FD_SETSIZE][50]; //so tai khoan tuong ung voi so may khach
+  int count[FD_SETSIZE]; //so bien dem cho cac tai khoan may khach
+
   ssize_t ret;
   fd_set readfds, allset;
   socklen_t clilen;
@@ -134,8 +136,55 @@ int main(int argc, char *argv[]){
         if (ret <= 0)
         {
           FD_CLR(sockfd, &allset);
-          close(sockfd);
-          client[i] = -1;
+          if(stateClient[i] == UNKNOWN || stateClient[i] == STATE1){
+            if(stateClient[i] == STATE1){
+              account *acc = find(listUser, user[i])->data;
+              acc->state = 0;
+              stateClient[i] = UNKNOWN;
+            }
+            printf("The connect [%s] has exited\n", inet_ntoa(cliaddr.sin_addr));
+            close(sockfd);
+            client[i] = -1;
+          }
+          else{
+            int index = findPlayMate(listTable, sockfd, client);
+            int id =  findIDPlayMate(listTable, sockfd);
+
+            //chuyen trang thai offline neu nhu tai khoan da dang nhap----//
+            if(find(listUser, user[i]) != NULL){
+              account *acc = find(listUser, user[i])->data;
+              acc->state = 0;
+
+              //tru diem cua nguoi choi do vi tu ty thoat ra
+              if(id != -1){
+                if(acc->point > 100)
+                  acc->point -= POINT;
+                else
+                  acc->point = 0;
+              }
+            }
+
+            printf("Player: %d -- Other Player:%d\n",sockfd, id);
+            if(id != -1 && index != -1){//tim thay nguoi choi khac dang cung choi voi tai khoan
+              GSList *man = find(listUser, user[index]);
+              account *acc = man->data;
+              acc->point += POINT; //cong them diem POINT cho nguoi choi
+              sendBuff->opcode = LEAVE_SUCCESS;
+              strcpy(sendBuff->message,"The player has left. Canceled the table game!");
+              stateClient[index] = STATE1;
+            }
+
+            listTable = leaveTable(listTable, sockfd); //huy bo ban choi
+            stateClient[i] = UNKNOWN;
+            
+            updateData(listUser);
+            close(sockfd);
+            client[i] = -1;
+            printf("The connect [%s] has exited\n", inet_ntoa(cliaddr.sin_addr));
+            if(id != -1 && sendBuff->turn != 1)
+              sendData(id, sendBuff, sizeof(Request), 0);  
+          }
+          printListUser(listUser);
         }
         else
         {
@@ -147,10 +196,10 @@ int main(int argc, char *argv[]){
           if(sendBuff == NULL){
             sendBuff = playGame(stateClient[i], rcvBuff, listTable, sockfd);
           }
-          printf("OPCODE HANDED : [%d]\n",sendBuff->opcode );
 
           //setting State for client---------------//
             if( sendBuff->opcode == LOGIN_FAIL||
+                sendBuff->opcode == PASS_WRONG||
                 sendBuff->opcode == REGISTER_SUCCESS||
                 sendBuff->opcode == REGISTER_FAIL||
                 sendBuff->opcode == LOGOUT_SUCCESS
@@ -160,6 +209,7 @@ int main(int argc, char *argv[]){
             }else if(
                 sendBuff->opcode == LOGIN_SUCCESS||
                 sendBuff->opcode == LOGOUT_FAIL||
+                sendBuff->opcode == RANK||
                 sendBuff->opcode == LEAVE_SUCCESS||
                 sendBuff->opcode == CREATE_FAIL||
                 sendBuff->opcode == JOIN_FAIL||
@@ -169,31 +219,32 @@ int main(int argc, char *argv[]){
 
             }else if(
                 sendBuff->opcode == CREATE_SUCCESS||
-                sendBuff->opcode == JOIN_SUCCESS||
-                sendBuff->opcode == LEAVE_FAIL
+                sendBuff->opcode == LEAVE_FAIL||
+                sendBuff->opcode == PLAY_FAIL
               ){
               stateClient[i] = STATE2;
 
-            }else if(
+            }
+            else if(sendBuff->opcode == JOIN_SUCCESS){
+              stateClient[i] = STATE2_2;
+            }
+
+            else if(
                 sendBuff->opcode == PLAY_SUCCESS||
                 sendBuff->opcode == MOVE_SUCCESS||
                 sendBuff->opcode == MOVE_FAIL
               ){
               stateClient[i] = STATE3;
 
-            }else if(
-              sendBuff->opcode == MOVE_SUCCESS
-              ){
-              stateClient[i] = STATE4;
-
             }
+
           //end setting state for client-----------//
 
           //SEND DATA TO CLIENT--------------------------//
 
           if(   sendBuff->opcode == LOGIN_SUCCESS||
                 sendBuff->opcode == LOGIN_FAIL||
-
+                sendBuff->opcode == PASS_WRONG||
                 sendBuff->opcode == REGISTER_SUCCESS||
                 sendBuff->opcode == REGISTER_FAIL||
 
@@ -204,13 +255,22 @@ int main(int argc, char *argv[]){
                 
                 sendBuff->opcode == PLAY_FAIL||
                 sendBuff->opcode == MOVE_FAIL||
-                // sendBuff->opcode == CHECK||
+                sendBuff->opcode == RANK||
                 sendBuff->opcode == REQUEST_FAIL){
 
             if(sendBuff->opcode == LOGIN_SUCCESS){
+              count[i] = 0;
               strcpy(user[i], sendBuff->username); //lay thong tin ve user dang online tuong ung voi may khach
             }
-
+            else if(sendBuff->opcode == PASS_WRONG){//neu sai mat khau
+              count[i] += 1; 
+              if(count[i] == 3){ //neu tai khoan nhap sai mat khau qua 3 lan 
+                account *acc = find(listUser, rcvBuff->username)->data;
+                acc->status = 0; //block tai khoan vi sai mat khau qua 3 lan
+                strcpy(sendBuff->message, "Password invalid 3 time! User is blocked!");
+                updateData(listUser);
+              }
+            }
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           }else if(sendBuff->opcode == CREATE_SUCCESS){
@@ -231,21 +291,37 @@ int main(int argc, char *argv[]){
               int type = Player(listTable, sockfd);  //xac dinh vai tro nguoi choi 1
           
               if(result == BLACK){  //master thang
-                if(type = MASTER){
+                if(type == MASTER){
                   acc1->point += POINT;
-                  acc2->point -= POINT;
 
-                }else if(type = GUEST){
-                  acc1->point -= POINT;
+                  if(acc2->point > POINT)
+                    acc2->point -= POINT;
+                  else
+                    acc2->point = 0;
+
+                }else if(type == GUEST){
+                  if(acc1->point > POINT)
+                    acc1->point -= POINT;
+                  else
+                    acc1->point = 0;
+
                   acc2->point += POINT;
                 }
-              }else if(result = WHITE){ //guest thang
-                if(type = GUEST){
+              }else if(result == WHITE){ //guest thang
+                if(type == GUEST){
                   acc1->point += POINT;
-                  acc2->point -= POINT;
 
-                }else if(type = MASTER){
-                  acc1->point -= POINT;
+                  if(acc2->point > POINT)
+                    acc2->point -= POINT;
+                  else
+                    acc2->point = 0;
+
+                }else if(type == MASTER){
+                  if(acc1->point > POINT)
+                    acc1->point -= POINT;
+                  else
+                    acc1->point = 0;
+
                   acc2->point += POINT;
                 }
               }
@@ -256,8 +332,11 @@ int main(int argc, char *argv[]){
               GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node chua thong tin nguoi 2
               account *acc1 = man1->data;
               account *acc2 = man2->data;
+              if(acc1->point > 100)
+                acc1->point -= POINT;
+              else
+                acc1->point = 0;
 
-              acc1->point -= POINT;
               acc2->point += POINT;
 
               //nguoi nao tu y thoat ra se bi tru 100 diem, nguoi con lai duoc cong 100 diem
@@ -281,7 +360,7 @@ int main(int argc, char *argv[]){
               sendBuff->turn = 0;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
 
-            }else if(node->current = WHITE){
+            }else if(node->current == WHITE){
               sendBuff->turn = 1;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
               sendBuff->turn = 0;

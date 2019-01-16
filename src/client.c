@@ -6,6 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <gtk/gtk.h>
+
 #include "../libs/account.h"
 #include "../libs/valid.h"
 #include "../libs/request.h"
@@ -20,11 +22,9 @@ int main(int argc, char *argv[])
   strcpy(SERVER_ADDR, argv[1]);
   int SERVER_PORT = atoi(argv[2]);
   int client_sock;
-  char buff[BUFF_SIZE];
   struct sockaddr_in server_addr; /* server's address information */
-  int msg_len, bytes_sent, bytes_received;
+  int bytes_sent, bytes_received;
 
-  int responseCode;
   //Step 1: Construct socket
   client_sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -45,7 +45,13 @@ int main(int argc, char *argv[])
   //send message
   while (1)
   {
-    Request *request = clientHandle();
+    Request *request;
+    do{
+       request = clientHandle();
+       if(request == NULL)
+        return 0; //shut down program
+     }while(request->opcode == RESET);
+   
 
     bytes_sent = sendData(client_sock, request, sizeof(Request), 0);
 
@@ -60,20 +66,27 @@ int main(int argc, char *argv[])
     int wait;
     do{
       //receive echo reply
-      bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
+        bytes_received = receiveData(client_sock, request, sizeof(Request), 0);
 
       if (bytes_received < 0){
-        perror("\nError: ");
         break;
       }
       else if (bytes_received == 0){
-        printf("Connection closed.\n");
         break;
       }
 
       wait = renderMessage(request);
-
+      
     }while(wait == 1);
+
+    if (bytes_received < 0){
+      perror("\nError: ");
+      break;
+    }
+    else if (bytes_received == 0){
+      printf("Connection closed.\n");
+      break;
+    }
   }
 
   //Step 4: Close socket

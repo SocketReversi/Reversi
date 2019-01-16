@@ -1,9 +1,10 @@
-CC = gcc
+CC = gcc -Wall
 CFLAGS = -I
 LIBS = -lm
 SERVER = server
 CLIENT = client
 GTK = `pkg-config --libs --cflags gtk+-3.0`
+EXP = -export-dynamic
 # Header file
 DEPS = $(wildcard lib/*.h)
 
@@ -29,7 +30,7 @@ $(SERVER): src/$(SERVER).o $(libs)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
 
 $(CLIENT): src/$(CLIENT).o $(libs) 
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) $(GTK) $(EXP)
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(GTK)

@@ -5,6 +5,23 @@
 #include "../../libs/reversi.h"
 #include "../../libs/clientHandle.h"
 
+void printHelp(){
+  printf(" --------------------\n");
+  printf("|%-10s|%-10s|\n","  Opcode","  Mean");
+  printf("\n --------------------\n");
+  printf("|   %-7d|%-10s|\n",  1," LOG IN");
+  printf("|   %-7d|%-10s|\n",  2," REGISTER");
+  printf("|   %-7d|%-10s|\n",  3," LOG OUT");
+  printf("|   %-7d|%-10s|\n",  4," RANK");
+  printf("|   %-7d|%-10s|\n",  5," CREATE");
+  printf("|   %-7d|%-10s|\n",  6," JOIN");
+  printf("|   %-7d|%-10s|\n",  7," LEAVE");
+  printf("|   %-7d|%-10s|\n",  8," PLAY");
+  printf("|   %-7d|%-10s|\n",  9," MOVE");
+  printf(" --------------------\n");
+  printf(" [help] : support opcode mean for client\n [exit] : exit program\n");
+}
+
 Request *clientHandle()
 {
   int select; 
@@ -16,9 +33,20 @@ Request *clientHandle()
     printf("Opcode: ");
     scanf("%s", input);
     select = atoi(input);
-  } while(select < LOGIN || select > MOVE);
-  switch(select){
 
+    if(strcmp(input,"help") == 0){
+      printHelp();
+    }else if(strcmp(input,"exit") == 0){
+      return NULL;
+    }
+    else if(select <LOGIN || select > MOVE){
+      printf("Request invalid! Input [help] for instructions!\n");
+    }
+
+  } while(select < LOGIN || select > MOVE);
+
+  switch(select){
+    char choice[10];
     case LOGIN: //1
 
       printf("LOG IN\nUsername: ");
@@ -42,35 +70,50 @@ Request *clientHandle()
       scanf("%s",request->password);
       break;
 
-    case CREATE://4
+    case RANK://4
+      printf("RANK\n");
       break;
 
-    case JOIN: //5
+    case CREATE://5
+      printf("CREATE\n");
+      printf("Waitting...\n");
       break;
 
-    case LEAVE://6
+    case JOIN: //6
+      printf("JOIN\n");
+      printf("Waitting...\n");
       break;
 
-    case PLAY://7
-      break;
-
-    case MOVE://8
-
-      printf("MOVE\nDOC  :");
-      scanf("%d",&request->doc);
-      printf("NGANG: ");
-      scanf("%d",&request->ngang);
-      while(request->doc < 0 || request->doc >7 || request->ngang < 0 || request->ngang >7){
-        
-        printf("Nuoc co khong hop le! Nhap lai\n");
-        printf("MOVE\nDOC  :");
-        scanf("%d",&request->doc);
-        printf("NGANG: ");
-        scanf("%d",&request->ngang);
+    case LEAVE://7
+      printf("LEAVE\n");
+      printf("Do you really want to leave the table game?\n");
+      printf(" [yes] -> Agree!        [other] -> Cancel! \n");
+      printf("Choice : ");scanf("%s",choice);
+      if(strcmp(choice,"yes") == 0){
+        select = LEAVE;
+      }else{
+        select = RESET;
       }
       break;
 
-    default:
+    case PLAY://8
+      printf("PLAY\n");
+      break;
+
+    case MOVE://9
+
+      printf("MOVE\nVertical   : ");
+      scanf("%d",&request->doc);
+      printf("Horizontal : ");
+      scanf("%d",&request->ngang);
+      while(request->doc < 0 || request->doc >7 || request->ngang < 0 || request->ngang >7){
+        
+        printf("Input invalid! Again!\n");
+        printf("MOVE\nVertical   : ");
+        scanf("%d",&request->doc);
+        printf("Horizontal : ");
+        scanf("%d",&request->ngang);
+      }
       break;
 
   }
@@ -118,6 +161,7 @@ int renderMessage(Request *request) {
 
     case CREATE_SUCCESS:
       printf("%s\n", request->message);
+      printf("Wait for other player ...\n");
       return 1;
 
     default:

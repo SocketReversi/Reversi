@@ -15,7 +15,3 @@ account *createAccount(char *username, char *password, int point, int state, int
 
   return user;
 }
-
-account *accountIsExistByUsername(char *username) {
-
-}

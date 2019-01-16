@@ -5,6 +5,7 @@ typedef enum {
   LOGIN = 1,
   REGISTER,
   LOGOUT,
+  RANK,
   CREATE,
   JOIN,
   LEAVE,
@@ -16,8 +17,8 @@ typedef enum {
   UNKNOWN = 20,
   STATE1,
   STATE2,
-  STATE3,
-  STATE4,
+  STATE2_2,
+  STATE3
 
 } SERVER_STATE;
 
@@ -48,7 +49,8 @@ typedef enum {
   LEAVE_FAIL,
   PLAY_FAIL,
   MOVE_FAIL,
-  REQUEST_FAIL
+  REQUEST_FAIL,
+  PASS_WRONG
 } ERROR;
 
 // Request struct

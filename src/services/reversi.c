@@ -26,9 +26,9 @@ void display (int board[SIZE][SIZE]) {
 	for ( i=0; i < SIZE; i++ ) printf("%4d", i);
 	printf("\n");
 	
-	printf("  ┌");
-	for ( i=0; i < SIZE-1; i++ ) { printf("---┬"); }
-	printf("---┐\n");
+	printf("  +");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---+"); }
+	printf("---+\n");
 	
 	for ( i=0; i < SIZE; i++ ) {
 		printf("%2d|", i);
@@ -45,45 +45,18 @@ void display (int board[SIZE][SIZE]) {
 		}
 		printf("\n");
 		if ( i < SIZE-1 ) {
-			printf("  ├");
+			printf("  +");
 			for ( j=0; j < SIZE-1; j++ ) {
 				printf("---+");
 			}
-			printf("---┤\n");
+			printf("---+\n");
 		}
 	}
 
-	printf("  └");
-	for ( i=0; i < SIZE-1; i++ ) { printf("---┴"); }
-	printf("---┘\n");
+	printf("  +");
+	for ( i=0; i < SIZE-1; i++ ) { printf("---+"); }
+	printf("---+\n");
 }
-
-//Hien thi ban co-------------------------------//
-// void display (int board[SIZE][SIZE]) {
-// 	int i, j;
-// 	printf("\n ");
-// 	for ( i=0; i < SIZE; i++ ) printf(" %d", i);
-// 	printf("\n");
-// 	for ( i=0; i < SIZE; i++ ) {
-// 		printf("%d", i);
-// 		for ( j=0; j < SIZE; j++ ) {
-// 			switch ( board[j][i] ) {
-// 				case BLACK: printf(" ○");
-// 				            break;
-// 				case WHITE: printf(" ●");
-// 				            break;
-// 				case NONE:	printf(" -");
-// 							break;
-// 				default: 
-// 					board[j][i] = NONE;
-// 					printf(" +");
-// 				    break;
-// 			}
-// 		}
-// 		printf("\n");
-// 	}
-// }
-
 
 //Kiem tra co the dao nguoc duoc quan co--------------//
 int isReversible ( const int m, const int n,int board[SIZE][SIZE],int current ) {
@@ -289,69 +262,9 @@ int winner (int board[SIZE][SIZE] ) {
 			else if(board[i][j]==NONE) blank++;
 		}
 	}
-	printf("Black %d  vs White %d \n", count, SIZE*SIZE-count-blank);
+	printf("○ [%d]  vs ● [%d] \n", count, SIZE*SIZE-count-blank);
 	
 	if      ( t < 0 ) return WHITE;
 	else if ( t > 0 ) return BLACK;
 	else              return NONE;
 }
-
-//choi game-------------------------------------------//
-int play(int board[SIZE][SIZE]){
-	int m, n;  	 
-	int result = 1;  
-	int current = BLACK;
-
-	value message;
-	
-	//khoi tao ban
-	initialize(board);    
-	//bat dau choi 
-	while (result != 0) {
-		display(board);
-
-		if ( current == BLACK ) {
-			printf("Black turn.\n");
-		}
-		else {
-			printf("White turn.\n");
-		}
-		while ( 1 ) {
-			printf("Nhap nuoc co (Doc - Ngang).\n");
-			printf("Doc  :");scanf("%d",&m);
-			printf("Ngang:");scanf("%d",&n);
-			
-			message = reverse(m, n, board,current);
-			result = message.state;
-			current = message.color;
-			printf("\n[Trang thai tro choi]-[%d]\n",result);
-			printf("Gia tri cua [current]-[%d]\n",current);
-			if ( result == 0 ) {
-				printf("(%d,%d) you can't place a stone here。\n", m, n);
-				printf("place again、");
-			}
-			else {
-				break;
-			}
-		}
-
-	}
-	printf("Result: %d\n",result);
-	display(board);
-	printf("\nresult: ");
-	switch ( winner(board) ) {
-		case BLACK: printf("winner, black!\n\n");
-			        break;
-		case WHITE: printf("winner, white!\n\n");
-			        break;
-		case NONE : printf("no winner!\n\n");
-			        break;
-	}
-	return 0;
-}
-
-// int main(){
-// 	int board[SIZE][SIZE];
-// 	play(board);
-// 	return 0;
-// }
