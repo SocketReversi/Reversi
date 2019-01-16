@@ -9,3 +9,4 @@ typedef struct account{
 
 account *createAccount(char *username, char *password, int point, int state, int status);
 account *accountIsExistByUsername(char *username);
+gint sortFunction(gconstpointer item1, gconstpointer item2);

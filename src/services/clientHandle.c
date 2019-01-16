@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gtk/gtk.h>
+
+#include "../../libs/account.h"
 #include "../../libs/request.h"
 #include "../../libs/reversi.h"
 #include "../../libs/clientHandle.h"
@@ -163,7 +166,10 @@ int renderMessage(Request *request) {
       printf("%s\n", request->message);
       printf("Wait for other player ...\n");
       return 1;
+    case RANK:
+      printf("%s\n", request->message);
 
+      break;
     default:
       printf("%s\n", request->message);
       break;

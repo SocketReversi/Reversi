@@ -4,8 +4,8 @@
 #include <string.h>
 #include <sys/select.h>
 
-#include "../../libs/request.h"
 #include "../../libs/account.h"
+#include "../../libs/request.h"
 #include "../../libs/file.h"
 #include "../../libs/serverHandle.h"
 #include "../../libs/reversi.h"
@@ -360,13 +360,12 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
       }else{
         //xu ly yeu cau muon xem Rank cua client
         /* code here*/
-
+        GSList *rank = g_slist_sort(listUser, (GCompareFunc)sortFunction);
         //tra ve opcode va thong diep cho client
-        /* code here*/
+
         sendRequest->opcode = RANK;
         strcpy(sendRequest->message,"--- * Your rank * ---\n"); 
       }
-
       break;
 
     default:

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <gtk/gtk.h>
+
 #include "../../libs/request.h"
 
 void processData(char *in, char *out)

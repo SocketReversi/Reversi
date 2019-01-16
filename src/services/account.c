@@ -15,3 +15,9 @@ account *createAccount(char *username, char *password, int point, int state, int
 
   return user;
 }
+
+gint sortFunction(gconstpointer item1, gconstpointer item2) {
+  account *first = (account *)item1;
+  account *second = (account *)item2;
+  return first->point < second->point;
+}
