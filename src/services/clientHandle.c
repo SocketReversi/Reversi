@@ -164,6 +164,12 @@ int renderMessage(Request *request) {
       printf("Wait for other player ...\n");
       return 1;
 
+    case RANK:
+      printf("%s\n", request->message);
+      printf("\n%-8s|%-8s\n","  RANK","  POINT");
+      printf("   %-5d|    %-4d\n",request->rank,request->point);
+      break;
+
     default:
       printf("%s\n", request->message);
       break;

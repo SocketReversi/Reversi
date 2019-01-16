@@ -58,6 +58,9 @@ typedef struct Request {
   int opcode;
   int board[8][8]; //Du lieu luu CO PHO
   int turn;        //du lieu de xac dinh luot choi
+  int rank;
+  int point;
+
   char message[50];
   char username[50];
   char password[50];

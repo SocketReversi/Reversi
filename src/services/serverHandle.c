@@ -11,12 +11,25 @@
 #include "../../libs/reversi.h"
 
 //dung link list----------------------//
-GSList *createTable(GSList *listTable, int id, char name[50]){
+GSList *createTable(GSList *listTable, GSList *listUser, int id, char name[50], int point){
 
   table *var = malloc(sizeof(table));
+  int rank = 1;
+  GSList *cur = listUser;
+  while(cur != NULL){
+    account *acc = cur->data;
+    if(strcmp(name,acc->username) == 0){
+      break;
+    }
+    rank += 1; // tang biet dem rank
+    cur = cur->next;
+  }
 
   var->master = id;
+  var->master_point = point;
+  var->master_rank = rank; //gan rank cua master
   strcpy(var->master_name , name); //them ten nguoi choi master
+
   var->guest = EMPTY;
   var->state = WAITING;
   var->result = 1;
@@ -31,18 +44,38 @@ GSList *createTable(GSList *listTable, int id, char name[50]){
 
 }
 
-int joinTable(GSList *listTable, int id, char name[50]){
+int joinTable(GSList *listTable, GSList *listUser, int id, char name[50], int point){
 
   GSList *var;
   var = listTable;
+
+  int rank = 1;
+  GSList *cur = listUser;
+  while(cur != NULL){
+    account *acc = cur->data;
+    if(strcmp(name,acc->username) == 0){
+      break;
+    }
+    rank += 1; // tang biet dem rank
+    cur = cur->next;
+  }
+
   while(var != NULL){
 
     table *node = var->data;
     if(node->state == WAITING){ //neu ban choi thieu nguoi
-      node->guest = id; //them khach vao ban choi
-      strcpy(node->guest_name , name); //them ten nguoi choi guest
-      node->state = FULL; //cap nhat trang thai ban choi FULL
-      return 1; //join thanh cong
+      int cachbiet = abs(node->master_rank - rank);
+      printf("Cacsh biet : %d\n", cachbiet);
+      if(cachbiet <= 10 ){ //neu cach biet diem so khong qua 10 bac
+          node->guest = id; //them khach vao ban choi
+          node->guest_point = point;
+          node->guest_rank = rank; //gan rank cua nguoi choi
+          strcpy(node->guest_name , name); //them ten nguoi choi guest
+
+          node->state = FULL; //cap nhat trang thai ban choi FULL
+          return 1; //join thanh cong  
+      }
+
     }
     var = var->next;
   }
@@ -96,8 +129,8 @@ void printTable(GSList *list){
   if(var == NULL){
     printf("\n[No table has been created]\n");
   }else{
-    printf("%-10s|%-15s|%-15s\n"," STATE"," MASTER"," GUEST");
-    printf(" -----------------------------------------\n");
+    printf("%-10s|%-22s|%-22s\n"," STATE"," MASTER(rank)"," GUEST(rank)");
+    printf(" -------------------------------------------------------\n");
     while(var != NULL){
 
       table *node = var->data;
@@ -109,13 +142,15 @@ void printTable(GSList *list){
           printf(" %-9s","FULL");
           break;
       }
-      printf("| %-14s| %-14s\n",
+      printf("| %-14s (%-4d)| %-14s (%-4d)\n",
         node->master_name,
-        node->guest_name
+        node->master_rank,
+        node->guest_name,
+        node->guest_rank
       );
       var = var->next;
     }
-    printf(" -----------------------------------------\n\n");
+    printf(" -------------------------------------------------------\n\n");
   }
 }
 
@@ -125,8 +160,9 @@ void printListUser(GSList *list){
   printf("Number user (%d)\n",(int)g_slist_length(list));
   GSList *var;
   var = list;
-  printf("%-20s|%-20s|%-10s|%-8s|%-10s\n"," USERNAME"," PASSWORD"," POINT"," STATE"," STATUS");
-  printf("\n ----------------------------------------------------------------------\n");
+  int i = 1;
+  printf("%-20s|%-20s|%-6s|%-10s|%-8s|%-10s\n"," USERNAME"," PASSWORD"," RANK"," POINT"," STATE"," STATUS");
+  printf("\n ------------------------------------------------------------------------------\n");
   while(var != NULL){
     account *acc = var->data;
     char state[10],status[10];
@@ -149,14 +185,16 @@ void printListUser(GSList *list){
         break;
     }
     
-    printf("  %-18s|  %-18s| %-9d|  %-6s| %-9s\n",
+    printf("  %-18s|  %-18s| %-5d| %-9d|  %-6s| %-9s\n",
             acc->username, 
             acc->password, 
+            i, // rank
             acc->point,
             state,
             status
           );
-    printf(" ----------------------------------------------------------------------\n");
+    printf(" ------------------------------------------------------------------------------\n");
+    i++;
     var = var->next;
   }
   printf("\n");
@@ -218,6 +256,7 @@ GSList *find(GSList *listUser, char name[50]){
 int Register(GSList *listUser, Request *request){
   account *user = createAccount(request->username,request->password, 0, 0 , 1);
   listUser = g_slist_append(listUser, user);
+  listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
   updateData(listUser);
   return 1;
 }
@@ -266,6 +305,10 @@ int findPlayMate(GSList *listTable, int id, int client[FD_SETSIZE]){ //tim index
 Request *handleRequest(int state, Request *request, GSList *listUser, char user[50])
 {
   Request *sendRequest = malloc(sizeof(Request));
+  GSList *ds = listUser;
+  account *tk;
+  int rankOfClient = 1;
+  int pointClient;
 
   switch (request->opcode)
   {
@@ -273,6 +316,12 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
       if(state != UNKNOWN){
         sendRequest->opcode = REQUEST_FAIL;
         strcpy(sendRequest->message,"Warning! Request invalid!");
+        switch(state){
+          case STATE1:
+            break;
+          case STATE2:
+            break;
+        }
         break;
       }
       if(find_User(listUser, request) != NULL){
@@ -360,7 +409,18 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
       }else{
         //xu ly yeu cau muon xem Rank cua client
         /* code here*/
+        while(ds != NULL){
+          tk = ds->data;
+          if(strcmp(tk->username, user) == 0){
+            pointClient = tk->point;
+            break;
+          }
+          rankOfClient ++;
+          ds = ds->next;
+        }
 
+        sendRequest->rank = rankOfClient;
+        sendRequest->point = pointClient;
         //tra ve opcode va thong diep cho client
         /* code here*/
         sendRequest->opcode = RANK;
@@ -377,7 +437,7 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
 }
 
 
-Request *groupClient(int state, Request *request, GSList *listTable, int client, char user[50]){
+Request *groupClient(int state, Request *request, GSList *listTable, GSList *listUser, int client, char user[50]){
 
   Request *sendRequest = malloc(sizeof(Request));
 
@@ -400,14 +460,18 @@ Request *groupClient(int state, Request *request, GSList *listTable, int client,
         strcpy(sendRequest->message,"Warning! Request invalid!");
         break;
       }
+      else{
 
-      if(joinTable(listTable, client, user) == 0){
-        sendRequest->opcode = JOIN_FAIL;
-        strcpy(sendRequest->message,"Not found table game online!");
-      }else{
-        sendRequest->opcode = JOIN_SUCCESS;
-        strcpy(sendRequest->message,"Success! The player has joined");
+        if(joinTable(listTable, listUser, client, user, ((account *)find(listUser, user)->data)->point ) == 0){
+          sendRequest->opcode = JOIN_FAIL;
+          strcpy(sendRequest->message,"No matching table found!"); //khong tim thay ban choi phu hop voi client
+        }else{
+          //copy thong diep de gui di cho nguoi choi
+          sendRequest->opcode = JOIN_SUCCESS;
+          strcpy(sendRequest->message,"Success! The player has joined");
+        }
       }
+
 
       break;
 

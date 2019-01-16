@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
 
   //Init user data
   GSList *listUser = importUserFromFileToList();
+  listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
   printListUser(listUser);
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
@@ -157,7 +158,7 @@ int main(int argc, char *argv[]){
 
               //tru diem cua nguoi choi do vi tu ty thoat ra
               if(id != -1){
-                if(acc->point > 100)
+                if(acc->point > POINT)
                   acc->point -= POINT;
                 else
                   acc->point = 0;
@@ -176,7 +177,8 @@ int main(int argc, char *argv[]){
 
             listTable = leaveTable(listTable, sockfd); //huy bo ban choi
             stateClient[i] = UNKNOWN;
-            
+
+            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
             updateData(listUser);
             close(sockfd);
             client[i] = -1;
@@ -188,7 +190,7 @@ int main(int argc, char *argv[]){
         }
         else
         {
-          sendBuff = groupClient(stateClient[i], rcvBuff, listTable, sockfd, user[i]);
+          sendBuff = groupClient(stateClient[i], rcvBuff, listTable, listUser, sockfd, user[i]);
           
           if(sendBuff == NULL){
             sendBuff = handleRequest(stateClient[i], rcvBuff,listUser,user[i]);
@@ -268,13 +270,15 @@ int main(int argc, char *argv[]){
                 account *acc = find(listUser, rcvBuff->username)->data;
                 acc->status = 0; //block tai khoan vi sai mat khau qua 3 lan
                 strcpy(sendBuff->message, "Password invalid 3 time! User is blocked!");
+                listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
                 updateData(listUser);
               }
             }
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           }else if(sendBuff->opcode == CREATE_SUCCESS){
-            listTable = createTable(listTable, sockfd, user[i]);
+            account *acc = find(listUser,user[i])->data; //lay diem so hien tai cua nguoi do
+            listTable = createTable(listTable, listUser, sockfd, user[i], acc->point); //them nguoi do vao phong
 
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
           }
@@ -332,7 +336,7 @@ int main(int argc, char *argv[]){
               GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node chua thong tin nguoi 2
               account *acc1 = man1->data;
               account *acc2 = man2->data;
-              if(acc1->point > 100)
+              if(acc1->point > POINT)
                 acc1->point -= POINT;
               else
                 acc1->point = 0;
@@ -347,6 +351,7 @@ int main(int argc, char *argv[]){
             sendData(node->guest, sendBuff, sizeof(Request), 0);
             int index = findPlayMate(listTable, sockfd, client);
             listTable = leaveTable(listTable, sockfd);
+            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
             updateData(listUser);
             stateClient[index] = STATE1;
           }
