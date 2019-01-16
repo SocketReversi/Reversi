@@ -186,6 +186,7 @@ account *find_User_Pass(GSList *list, Request *request){
     }
     var = var->next;
   }
+  return NULL;
 }
 
 //tim tai khoan theo ten------------------------------//

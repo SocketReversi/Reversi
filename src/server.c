@@ -174,7 +174,7 @@ int main(int argc, char *argv[]){
               stateClient[index] = STATE1;
             }
 
-            listTable = leaveTable(listTable, sockfd);
+            listTable = leaveTable(listTable, sockfd); //huy bo ban choi
             stateClient[i] = UNKNOWN;
             printListUser(listUser);
             updateData(listUser);
@@ -290,7 +290,7 @@ int main(int argc, char *argv[]){
               int type = Player(listTable, sockfd);  //xac dinh vai tro nguoi choi 1
           
               if(result == BLACK){  //master thang
-                if(type = MASTER){
+                if(type == MASTER){
                   acc1->point += POINT;
 
                   if(acc2->point > POINT)
@@ -298,7 +298,7 @@ int main(int argc, char *argv[]){
                   else
                     acc2->point = 0;
 
-                }else if(type = GUEST){
+                }else if(type == GUEST){
                   if(acc1->point > POINT)
                     acc1->point -= POINT;
                   else
@@ -306,8 +306,8 @@ int main(int argc, char *argv[]){
 
                   acc2->point += POINT;
                 }
-              }else if(result = WHITE){ //guest thang
-                if(type = GUEST){
+              }else if(result == WHITE){ //guest thang
+                if(type == GUEST){
                   acc1->point += POINT;
 
                   if(acc2->point > POINT)
@@ -315,7 +315,7 @@ int main(int argc, char *argv[]){
                   else
                     acc2->point = 0;
 
-                }else if(type = MASTER){
+                }else if(type == MASTER){
                   if(acc1->point > POINT)
                     acc1->point -= POINT;
                   else
@@ -359,7 +359,7 @@ int main(int argc, char *argv[]){
               sendBuff->turn = 0;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
 
-            }else if(node->current = WHITE){
+            }else if(node->current == WHITE){
               sendBuff->turn = 1;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
               sendBuff->turn = 0;

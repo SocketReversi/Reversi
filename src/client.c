@@ -22,11 +22,9 @@ int main(int argc, char *argv[])
   strcpy(SERVER_ADDR, argv[1]);
   int SERVER_PORT = atoi(argv[2]);
   int client_sock;
-  char buff[BUFF_SIZE];
   struct sockaddr_in server_addr; /* server's address information */
-  int msg_len, bytes_sent, bytes_received;
+  int bytes_sent, bytes_received;
 
-  int responseCode;
   //Step 1: Construct socket
   client_sock = socket(AF_INET, SOCK_STREAM, 0);
 

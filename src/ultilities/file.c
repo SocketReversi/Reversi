@@ -28,7 +28,7 @@ GSList *importUserFromFileToList() {
   }
 
   char username[30], password[30];
-  int id, point, status;
+  int point, status;
 
   while(1) {
     fscanf(file, "%s %s %d %d", username, password, &point, &status);
