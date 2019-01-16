@@ -176,7 +176,7 @@ int main(int argc, char *argv[]){
 
             listTable = leaveTable(listTable, sockfd); //huy bo ban choi
             stateClient[i] = UNKNOWN;
-            printListUser(listUser);
+            
             updateData(listUser);
             close(sockfd);
             client[i] = -1;
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]){
             if(id != -1 && sendBuff->turn != 1)
               sendData(id, sendBuff, sizeof(Request), 0);  
           }
-          
+          printListUser(listUser);
         }
         else
         {
@@ -209,6 +209,7 @@ int main(int argc, char *argv[]){
             }else if(
                 sendBuff->opcode == LOGIN_SUCCESS||
                 sendBuff->opcode == LOGOUT_FAIL||
+                sendBuff->opcode == RANK||
                 sendBuff->opcode == LEAVE_SUCCESS||
                 sendBuff->opcode == CREATE_FAIL||
                 sendBuff->opcode == JOIN_FAIL||
@@ -254,7 +255,7 @@ int main(int argc, char *argv[]){
                 
                 sendBuff->opcode == PLAY_FAIL||
                 sendBuff->opcode == MOVE_FAIL||
-                // sendBuff->opcode == CHECK||
+                sendBuff->opcode == RANK||
                 sendBuff->opcode == REQUEST_FAIL){
 
             if(sendBuff->opcode == LOGIN_SUCCESS){

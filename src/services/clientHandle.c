@@ -12,12 +12,14 @@ void printHelp(){
   printf("|   %-7d|%-10s|\n",  1," LOG IN");
   printf("|   %-7d|%-10s|\n",  2," REGISTER");
   printf("|   %-7d|%-10s|\n",  3," LOG OUT");
-  printf("|   %-7d|%-10s|\n",  4," CREATE");
-  printf("|   %-7d|%-10s|\n",  5," JOIN");
-  printf("|   %-7d|%-10s|\n",  6," LEAVE");
-  printf("|   %-7d|%-10s|\n",  7," PLAY");
-  printf("|   %-7d|%-10s|\n",  8," MOVE");
+  printf("|   %-7d|%-10s|\n",  4," RANK");
+  printf("|   %-7d|%-10s|\n",  5," CREATE");
+  printf("|   %-7d|%-10s|\n",  6," JOIN");
+  printf("|   %-7d|%-10s|\n",  7," LEAVE");
+  printf("|   %-7d|%-10s|\n",  8," PLAY");
+  printf("|   %-7d|%-10s|\n",  9," MOVE");
   printf(" --------------------\n");
+  printf(" [help] : support opcode mean for client\n [exit] : exit program\n");
 }
 
 Request *clientHandle()
@@ -34,7 +36,10 @@ Request *clientHandle()
 
     if(strcmp(input,"help") == 0){
       printHelp();
-    }else if(select <LOGIN || select > MOVE){
+    }else if(strcmp(input,"exit") == 0){
+      return NULL;
+    }
+    else if(select <LOGIN || select > MOVE){
       printf("Request invalid! Input [help] for instructions!\n");
     }
 

@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
     Request *request;
     do{
        request = clientHandle();
+       if(request == NULL)
+        return 0; //shut down program
      }while(request->opcode == RESET);
    
 

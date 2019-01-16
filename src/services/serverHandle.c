@@ -353,13 +353,20 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
       break;
 
     case RANK:
+      if(state != STATE1){
+        sendRequest->opcode = REQUEST_FAIL;
+        strcpy(sendRequest->message,"Warning! Request invalid!");
+        break;
+      }else{
+        //xu ly yeu cau muon xem Rank cua client
+        /* code here*/
 
-      //xu ly yeu cau muon xem Rank cua client
-      /* code here*/
+        //tra ve opcode va thong diep cho client
+        /* code here*/
+        sendRequest->opcode = RANK;
+        strcpy(sendRequest->message,"--- * Your rank * ---\n"); 
+      }
 
-      //tra ve opcode va thong diep cho client
-      /* code here*/
-      
       break;
 
     default:
