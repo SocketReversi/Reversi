@@ -2,31 +2,31 @@
 #define EMPTY -1
 #define WAITING 11
 #define FULL 22
-#define BACKLOG 20 /* Number of allowed connections */
+#define BACKLOG 20
 #define BUFF_SIZE 1024
 #define MASTER 111
 #define GUEST  112
 
-#define POINT 3 //So diem + or - sau moi van co
+#define POINT 3
 
 typedef struct ttable{
 
-	int master; //chu
+	int master; 
 	int master_point;
 	int master_rank;
 	char master_name[50];
 
-	int guest;	//khach
+	int guest;
 	int guest_point;
 	int guest_rank;
 	char guest_name[50];
 
-	int state;	//trang thai ban co- WAITINT - FULL
+	int state;
 	
-	int board[8][8]; //ban co
-	int turn; //luot di cua nguoi choi
-	int result; //ket qua tran co
-	int current; //trang thai hien tai cua mau quan co
+	int board[8][8]; 
+	int turn;
+	int result;
+	int current;
 }table;
 
 GSList *createTable(GSList *listTable, GSList *listUser, int id, char name[50], int point);

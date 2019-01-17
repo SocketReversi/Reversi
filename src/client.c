@@ -17,6 +17,7 @@
 int main(int argc, char *argv[])
 {
   paramsClientValid(argc);
+  
   //set server address
   char SERVER_ADDR[20];
   strcpy(SERVER_ADDR, argv[1]);

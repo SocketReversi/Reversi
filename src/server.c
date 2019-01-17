@@ -26,6 +26,7 @@
 
 int main(int argc, char *argv[]){
   paramsServerValid(argc);
+
   // Set open port
   int PORT = atoi(argv[1]);
 
@@ -34,14 +35,14 @@ int main(int argc, char *argv[]){
 
   //Init user data
   GSList *listUser = importUserFromFileToList();
-  listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
+  listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);
   printListUser(listUser);
 
   int i, maxi, maxfd, listenfd, connfd, sockfd;
-  int nready, client[FD_SETSIZE]; //so may khach toi da
-  int stateClient[FD_SETSIZE]; //trang thai tuong ung voi moi tai khoan Client
-  char user[FD_SETSIZE][50]; //so tai khoan tuong ung voi so may khach
-  int count[FD_SETSIZE]; //so bien dem cho cac tai khoan may khach
+  int nready, client[FD_SETSIZE];
+  int stateClient[FD_SETSIZE];
+  char user[FD_SETSIZE][50];
+  int count[FD_SETSIZE];
 
   ssize_t ret;
   fd_set readfds, allset;
@@ -137,6 +138,8 @@ int main(int argc, char *argv[]){
         if (ret <= 0)
         {
           FD_CLR(sockfd, &allset);
+
+          //handing with case of a sudden client exit------------------------//
           if(stateClient[i] == UNKNOWN || stateClient[i] == STATE1){
             if(stateClient[i] == STATE1){
               account *acc = find(listUser, user[i])->data;
@@ -151,12 +154,12 @@ int main(int argc, char *argv[]){
             int index = findPlayMate(listTable, sockfd, client);
             int id =  findIDPlayMate(listTable, sockfd);
 
-            //chuyen trang thai offline neu nhu tai khoan da dang nhap----//
+            //state switch---------------------------//
             if(find(listUser, user[i]) != NULL){
               account *acc = find(listUser, user[i])->data;
               acc->state = 0;
 
-              //tru diem cua nguoi choi do vi tu ty thoat ra
+              //If the player arbitrarily exits, deduct the player's score
               if(id != -1){
                 if(acc->point > POINT)
                   acc->point -= POINT;
@@ -166,19 +169,19 @@ int main(int argc, char *argv[]){
             }
 
             printf("Player: %d -- Other Player:%d\n",sockfd, id);
-            if(id != -1 && index != -1){//tim thay nguoi choi khac dang cung choi voi tai khoan
+            if(id != -1 && index != -1){ //found other play on table
               GSList *man = find(listUser, user[index]);
               account *acc = man->data;
-              acc->point += POINT; //cong them diem POINT cho nguoi choi
+              acc->point += POINT; // plus point for player
               sendBuff->opcode = LEAVE_SUCCESS;
               strcpy(sendBuff->message,"The player has left. Canceled the table game!");
               stateClient[index] = STATE1;
             }
 
-            listTable = leaveTable(listTable, sockfd); //huy bo ban choi
+            listTable = leaveTable(listTable, sockfd); //delete table game
             stateClient[i] = UNKNOWN;
 
-            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
+            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sort list user with user point from high to low
             updateData(listUser);
             close(sockfd);
             client[i] = -1;
@@ -262,39 +265,40 @@ int main(int argc, char *argv[]){
 
             if(sendBuff->opcode == LOGIN_SUCCESS){
               count[i] = 0;
-              strcpy(user[i], sendBuff->username); //lay thong tin ve user dang online tuong ung voi may khach
+              strcpy(user[i], sendBuff->username); //get information of user online
             }
-            else if(sendBuff->opcode == PASS_WRONG){//neu sai mat khau
+            else if(sendBuff->opcode == PASS_WRONG){//if password is wrong
               count[i] += 1; 
-              if(count[i] == 3){ //neu tai khoan nhap sai mat khau qua 3 lan 
+              if(count[i] == 3){ //if the account has entered the password incorrectly 3 times
                 account *acc = find(listUser, rcvBuff->username)->data;
-                acc->status = 0; //block tai khoan vi sai mat khau qua 3 lan
+                acc->status = 0; //block account
                 strcpy(sendBuff->message, "Password invalid 3 time! User is blocked!");
-                listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
+                listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sort list user
                 updateData(listUser);
               }
             }
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
 
           }else if(sendBuff->opcode == CREATE_SUCCESS){
-            account *acc = find(listUser,user[i])->data; //lay diem so hien tai cua nguoi do
-            listTable = createTable(listTable, listUser, sockfd, user[i], acc->point); //them nguoi do vao phong
+            account *acc = find(listUser,user[i])->data; //get point of user
+            listTable = createTable(listTable, listUser, sockfd, user[i], acc->point); //add player to table game
 
             ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
           }
 
           else if(sendBuff->opcode == LEAVE_SUCCESS || sendBuff->opcode == END_GAME){
+            
             if(sendBuff->opcode == END_GAME){
-              int result = winner(sendBuff->board); // ket qua tran co
+              int result = winner(sendBuff->board); // result of table game
 
-              GSList *man1 = find(listUser, user[i]); //node chua thong tin nguoi 1
-              GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node chua thong tin nguoi 2
+              GSList *man1 = find(listUser, user[i]); //node have info player 1
+              GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node have info player 2
               account *acc1 = man1->data;
               account *acc2 = man2->data;
 
-              int type = Player(listTable, sockfd);  //xac dinh vai tro nguoi choi 1
+              int type = Player(listTable, sockfd);  //type player 1
           
-              if(result == BLACK){  //master thang
+              if(result == BLACK){  //master win
                 if(type == MASTER){
                   acc1->point += POINT;
 
@@ -311,7 +315,7 @@ int main(int argc, char *argv[]){
 
                   acc2->point += POINT;
                 }
-              }else if(result == WHITE){ //guest thang
+              }else if(result == WHITE){ //guest win
                 if(type == GUEST){
                   acc1->point += POINT;
 
@@ -332,8 +336,8 @@ int main(int argc, char *argv[]){
             }
 
             else if(sendBuff->opcode == LEAVE_SUCCESS){
-              GSList *man1 = find(listUser, user[i]); //node chua thong tin nguoi 1
-              GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node chua thong tin nguoi 2
+              GSList *man1 = find(listUser, user[i]); //node have info player 1
+              GSList *man2 = find(listUser, user[findPlayMate(listTable, sockfd, client)]); //node have info player 2
               account *acc1 = man1->data;
               account *acc2 = man2->data;
               if(acc1->point > POINT)
@@ -343,7 +347,7 @@ int main(int argc, char *argv[]){
 
               acc2->point += POINT;
 
-              //nguoi nao tu y thoat ra se bi tru 100 diem, nguoi con lai duoc cong 100 diem
+              //Those who arbitrarily exit the game will be penalized and the other will earn points
             }
 
             table *node = findWithID(listTable, sockfd)->data;
@@ -351,7 +355,7 @@ int main(int argc, char *argv[]){
             sendData(node->guest, sendBuff, sizeof(Request), 0);
             int index = findPlayMate(listTable, sockfd, client);
             listTable = leaveTable(listTable, sockfd);
-            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);//sap xep lai cac tai khoan theo diem so
+            listUser = g_slist_sort(listUser, (GCompareFunc)sortFunction);
             updateData(listUser);
             stateClient[index] = STATE1;
           }
@@ -388,8 +392,8 @@ int main(int argc, char *argv[]){
               ret = sendData(sockfd, sendBuff, sizeof(Request), 0);
             }
           }
-          printListUser(listUser); //hien thi thong tin cac tai khoan
-          printTable(listTable); //Hien thi cac ban choi
+          printListUser(listUser); //display list user
+          printTable(listTable); //display list table game in server
           //DONE HANDING DATA TO SEND-------------------//
 
           if (ret <= 0)

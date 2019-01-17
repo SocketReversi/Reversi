@@ -22,6 +22,7 @@ void printHelp(){
   printf(" [help] : support opcode mean for client\n [exit] : exit program\n");
 }
 
+//handing input data for client
 Request *clientHandle()
 {
   int select; 
@@ -123,8 +124,12 @@ Request *clientHandle()
   return request;
 }
 
+//display reply from server for client--------------//
 int renderMessage(Request *request) {
   printf("\n[Reply from server]-> ");
+  int i, j;
+  int t = 0, count=0, blank=0;
+  
   switch(request->opcode){
 
     case LOGIN_SUCCESS:
@@ -147,6 +152,14 @@ int renderMessage(Request *request) {
 
     case MOVE_SUCCESS:
       display(request->board);
+      for ( i=0; i < SIZE; i++ ) {
+        for ( j=0; j < SIZE; j++ ) {
+          t += request->board[i][j];
+          if(request->board[i][j]==BLACK) count++;
+          else if(request->board[i][j]==NONE) blank++;
+        }
+      }
+      printf("\n○ [%d]  vs ● [%d] \n", count, SIZE*SIZE-count-blank);
       if(request->turn == 0){
         printf("Waitting ...\n");
         return 1;
@@ -165,9 +178,23 @@ int renderMessage(Request *request) {
       return 1;
 
     case RANK:
-      printf("%s\n", request->message);
+      printf("\n%s\n", request->message);
       printf("\n%-8s|%-8s\n","  RANK","  POINT");
       printf("   %-5d|    %-4d\n",request->rank,request->point);
+      break;
+
+    case END_GAME:
+      display(request->board);
+      
+      for ( i=0; i < SIZE; i++ ) {
+        for ( j=0; j < SIZE; j++ ) {
+          t += request->board[i][j];
+          if(request->board[i][j]==BLACK) count++;
+          else if(request->board[i][j]==NONE) blank++;
+        }
+      }
+      printf("\n○ [%d]  vs ● [%d] \n", count, SIZE*SIZE-count-blank);
+      printf("\n%s\n", request->message);
       break;
 
     default:
@@ -175,5 +202,5 @@ int renderMessage(Request *request) {
       break;
   }
 
-  return 0; //khong co yeu cau doi them
+  return 0; //not request for wait more
 }

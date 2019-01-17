@@ -7,6 +7,7 @@
 #include "../../libs/reversi.h"
 #include "../../libs/serverHandle.h"
 
+//open file-----------------------------------//
 FILE *open(char *filename, char *action) {
 	FILE *file = fopen(filename, action);
 
@@ -18,6 +19,7 @@ FILE *open(char *filename, char *action) {
 	}
 }
 
+//import list user form file data-------------//
 GSList *importUserFromFileToList() {
   GSList *list = NULL;
 
@@ -41,6 +43,7 @@ GSList *importUserFromFileToList() {
   return list;
 }
 
+//update new data to file data--------------------------------------------------//
 void updateData(GSList *list){
   FILE *f = open(PATH_FILE, "w");
 

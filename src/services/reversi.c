@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//initialize the board game-------------------//
 void initialize (int board[SIZE][SIZE]) {
 	
 	int i, j;
@@ -16,9 +17,8 @@ void initialize (int board[SIZE][SIZE]) {
 	board[SIZE/2][SIZE/2]     = WHITE;
 }
 
-
+//display the board game---------------------------/
 void display (int board[SIZE][SIZE]) {
-	
 	
 	int i, j;
 	
@@ -58,7 +58,7 @@ void display (int board[SIZE][SIZE]) {
 	printf("---+\n");
 }
 
-//Kiem tra co the dao nguoc duoc quan co--------------//
+//check is Reversible ?--------------//
 int isReversible ( const int m, const int n,int board[SIZE][SIZE],int current ) {
 	int i, j;
 	int result = 0; 
@@ -129,11 +129,11 @@ int isReversible ( const int m, const int n,int board[SIZE][SIZE],int current ) 
 }
 
 
-//Thuc hien dao nguoc quan co--------------------//
+//Perform reverse chess pieces----------------------------------------//
 value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
 	int i, j;
 	int reversed = 0;
-	value message; //luu tru gia tri tra ve cho ham
+	value message; //save state of board game
 
 	int reversible = isReversible(m, n, board,current);
 
@@ -250,7 +250,7 @@ value reverse ( int m, int n , int board[SIZE][SIZE],int current) {
 	return message;
 }
 
-//Xac dinh ben nao chien thang-------------------------------------------//
+//find winner of game-------------------------------------------//
 int winner (int board[SIZE][SIZE] ) {
 	int i, j;
 	int t = 0, count=0, blank=0;
