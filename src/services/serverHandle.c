@@ -323,11 +323,19 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
     case LOGIN:
       if(state != UNKNOWN){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
         switch(state){
           case STATE1:
+            strcat(sendRequest->message,"logout,create,join,rank");
             break;
           case STATE2:
+            strcat(sendRequest->message,"play,leave");
+            break;
+          case STATE2_2:
+            strcat(sendRequest->message,"move,leave");
+            break;
+          case STATE3:
+            strcat(sendRequest->message,"leave");
             break;
         }
         break;
@@ -366,7 +374,21 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
     case REGISTER:
       if(state != UNKNOWN){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case STATE1:
+            strcat(sendRequest->message,"logout,create,join,rank");
+            break;
+          case STATE2:
+            strcat(sendRequest->message,"play,leave");
+            break;
+          case STATE2_2:
+            strcat(sendRequest->message,"move,leave");
+            break;
+          case STATE3:
+            strcat(sendRequest->message,"leave");
+            break;
+        }
         break;
       }
       if(find_User(listUser, request) == NULL){
@@ -382,7 +404,21 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
     case LOGOUT:
       if(state != STATE1){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case UNKNOWN:
+            strcat(sendRequest->message,"login,register");
+            break;
+          case STATE2:
+            strcat(sendRequest->message,"play,leave");
+            break;
+          case STATE2_2:
+            strcat(sendRequest->message,"move,leave");
+            break;
+          case STATE3:
+            strcat(sendRequest->message,"leave");
+            break;
+        }
         break;
       }
       if(find_User(listUser, request) != NULL){
@@ -409,7 +445,21 @@ Request *handleRequest(int state, Request *request, GSList *listUser, char user[
     case RANK:
       if(state != STATE1){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case UNKNOWN:
+            strcat(sendRequest->message,"login,register");
+            break;
+          case STATE2:
+            strcat(sendRequest->message,"play,leave");
+            break;
+          case STATE2_2:
+            strcat(sendRequest->message,"move,leave");
+            break;
+          case STATE3:
+            strcat(sendRequest->message,"leave");
+            break;
+        }
         break;
       }else{
 
@@ -448,7 +498,21 @@ Request *groupClient(int state, Request *request, GSList *listTable, GSList *lis
     case CREATE:
         if(state != STATE1){
           sendRequest->opcode = REQUEST_FAIL;
-          strcpy(sendRequest->message,"Warning! Request invalid!");
+          strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+          switch(state){
+              case UNKNOWN:
+                strcat(sendRequest->message,"login,register");
+                break;
+              case STATE2:
+                strcat(sendRequest->message,"play,leave");
+                break;
+              case STATE2_2:
+                strcat(sendRequest->message,"move,leave");
+                break;
+              case STATE3:
+               strcat(sendRequest->message,"leave");
+                break;
+            }
           break;
         }
         sendRequest->opcode = CREATE_SUCCESS;
@@ -459,7 +523,21 @@ Request *groupClient(int state, Request *request, GSList *listTable, GSList *lis
 
       if(state != STATE1){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+            case UNKNOWN:
+              strcat(sendRequest->message,"login,register");
+              break;
+            case STATE2:
+              strcat(sendRequest->message,"play,leave");
+              break;
+            case STATE2_2:
+              strcat(sendRequest->message,"move,leave");
+              break;
+            case STATE3:
+              strcat(sendRequest->message,"leave");
+              break;
+          }
         break;
       }
       else{
@@ -479,7 +557,15 @@ Request *groupClient(int state, Request *request, GSList *listTable, GSList *lis
     case LEAVE:
       if(state != STATE2 && state != STATE2_2 && state != STATE3){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case UNKNOWN:
+            strcat(sendRequest->message,"login,register");
+            break;
+          case STATE1:
+            strcat(sendRequest->message,"logout,create,join,rank");
+            break;
+        }
         break;
       }
 
@@ -513,7 +599,21 @@ Request *playGame(int state, Request *request, GSList *listTable, int client){
 
       if(state != STATE2){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case STATE1:
+            strcat(sendRequest->message,"logout,create,join,rank");
+            break;
+          case UNKNOWN:
+            strcat(sendRequest->message,"login,register");
+            break;
+          case STATE2_2:
+            strcat(sendRequest->message,"move,leave");
+            break;
+          case STATE3:
+            strcat(sendRequest->message,"leave");
+            break;
+        }
         break;
       }
 
@@ -531,7 +631,18 @@ Request *playGame(int state, Request *request, GSList *listTable, int client){
     case MOVE:
       if(state != STATE2_2 && state != STATE3 ){
         sendRequest->opcode = REQUEST_FAIL;
-        strcpy(sendRequest->message,"Warning! Request invalid!");
+        strcpy(sendRequest->message,"Warning! Request invalid!Ex:");
+        switch(state){
+          case STATE1:
+            strcat(sendRequest->message,"logout,create,join,rank");
+            break;
+          case STATE2:
+            strcat(sendRequest->message,"play,leave");
+            break;
+          case UNKNOWN:
+            strcat(sendRequest->message,"login,register");
+            break;
+        }
         break;
       }
       var = findWithID(listTable, client);

@@ -1,3 +1,6 @@
+#define DOI 1110
+#define TIEP 1111
+
 /**
  ** Client request opcode 
  **/

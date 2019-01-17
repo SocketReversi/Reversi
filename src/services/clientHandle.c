@@ -142,7 +142,7 @@ int renderMessage(Request *request) {
 
     case PLAY_SUCCESS:
       display(request->board);
-      if(request->turn == 0){
+      if(request->turn == DOI){
         printf("Waitting ...\n");
         return 1;
       }
@@ -160,7 +160,7 @@ int renderMessage(Request *request) {
         }
       }
       printf("\n○ [%d]  vs ● [%d] \n", count, SIZE*SIZE-count-blank);
-      if(request->turn == 0){
+      if(request->turn == DOI){
         printf("Waitting ...\n");
         return 1;
       }

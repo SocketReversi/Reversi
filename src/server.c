@@ -186,8 +186,10 @@ int main(int argc, char *argv[]){
             close(sockfd);
             client[i] = -1;
             printf("The connect [%s] has exited\n", inet_ntoa(cliaddr.sin_addr));
-            if(id != -1 && sendBuff->turn != 1)
+            printf("(Turn:%d)\n",sendBuff->turn );
+            if(id != -1){
               sendData(id, sendBuff, sizeof(Request), 0);  
+            }
           }
           printListUser(listUser);
         }
@@ -364,15 +366,15 @@ int main(int argc, char *argv[]){
             table *node = findWithID(listTable, sockfd)->data;
 
             if(node->current == BLACK){
-              sendBuff->turn = 1;
+              sendBuff->turn = TIEP;
               sendData(node->master, sendBuff, sizeof(Request), 0);
-              sendBuff->turn = 0;
+              sendBuff->turn = DOI;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
 
             }else if(node->current == WHITE){
-              sendBuff->turn = 1;
+              sendBuff->turn = TIEP;
               sendData(node->guest, sendBuff, sizeof(Request), 0);
-              sendBuff->turn = 0;
+              sendBuff->turn = DOI;
               sendData(node->master, sendBuff, sizeof(Request), 0);
             }
 
